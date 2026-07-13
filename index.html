@@ -1,0 +1,2315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreshScan AI — Smart Fruit Freshness Detection</title>
+    <meta name="description"
+        content="AI-powered fruit freshness detection system using multimodal vision AI. Analyze fruit quality instantly with camera or image upload.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        /* ===== CSS RESET & VARIABLES ===== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #4CAF50;
+            --primary-dark: #1B5E20;
+            --primary-bg: rgba (46, 125, 50, 0.08);
+            --secondary: #FF6F00;
+            --accent: #00BFA5;
+            --surface: #FFFFFF;
+            --surface-2: #F5F7FA;
+            --surface-3: #EAECF0;
+            --background: #F0F2F5;
+            --text-primary: #1A1A2E;
+            --text-secondary: #5F6368;
+            --text-tertiary: #9AA0A6;
+            --border: #DFE1E6;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.10);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --fresh: #2E7D32;
+            --fresh-bg: #E8F5E9;
+            --slightly-fresh: #F9A825;
+            --slightly-fresh-bg: #FFF8E1;
+            --overripe: #EF6C00;
+            --overripe-bg: #FFF3E0;
+            --rotten: #C62828;
+            --rotten-bg: #FFEBEE;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===== GLOBAL STYLES ===== */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-tertiary);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* ===== LAYOUT ===== */
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 260px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 100;
+            transition: transform var(--transition);
+        }
+
+        .sidebar-brand {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-brand .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+        }
+
+        .sidebar-brand h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .sidebar-brand span {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-tertiary);
+            padding: 16px 12px 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: var(--surface-2);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--primary-bg);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item .material-symbols-rounded {
+            font-size: 22px;
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .sidebar-footer .app-version {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            text-align: center;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar-left h2 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-size: 24px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: var(--fresh-bg);
+            color: var(--fresh);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .topbar-badge .material-symbols-rounded {
+            font-size: 16px;
+        }
+
+        /* ===== PAGE CONTAINER ===== */
+        .page {
+            display: none;
+            padding: 28px 32px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: box-shadow var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        /* ===== STAT CARDS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            transition: all var(--transition);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.green {
+            background: var(--fresh-bg);
+            color: var(--fresh);
+        }
+
+        .stat-icon.yellow {
+            background: var(--slightly-fresh-bg);
+            color: var(--slightly-fresh);
+        }
+
+        .stat-icon.orange {
+            background: var(--overripe-bg);
+            color: var(--overripe);
+        }
+
+        .stat-icon.red {
+            background: var(--rotten-bg);
+            color: var(--rotten);
+        }
+
+        .stat-icon.blue {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.1;
+        }
+
+        /* ===== SCAN PAGE ===== */
+        .scan-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-xl);
+            padding: 48px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: var(--surface);
+            position: relative;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--primary);
+            background: var(--primary-bg);
+        }
+
+        .upload-zone .upload-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px;
+            background: var(--primary-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 32px;
+        }
+
+        .upload-zone h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .upload-zone p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .upload-divider::before,
+        .upload-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .camera-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all var(--transition);
+            font-family: inherit;
+        }
+
+        .camera-btn:hover {
+            background: var(--surface-2);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .camera-btn .material-symbols-rounded {
+            font-size: 22px;
+        }
+
+        /* ===== CAMERA MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 24px;
+            padding: 4px;
+            border-radius: 50%;
+            transition: background var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--surface-2);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        #cameraFeed {
+            width: 100%;
+            border-radius: var(--radius-md);
+            background: #000;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+        }
+
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        /* ===== IMAGE PREVIEW ===== */
+        .image-preview-section {
+            display: none;
+            margin-top: 24px;
+        }
+
+        .image-preview-section.active {
+            display: block;
+        }
+
+        .preview-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .preview-image-wrap {
+            position: relative;
+            background: var(--surface-3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            max-height: 400px;
+            overflow: hidden;
+        }
+
+        .preview-image-wrap img {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+        }
+
+        .preview-actions {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+        }
+
+        .preview-file-info {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .preview-file-info strong {
+            color: var(--text-primary);
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all var(--transition);
+            border: none;
+            line-height: 1.4;
+        }
+
+        .btn .material-symbols-rounded {
+            font-size: 20px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:disabled {
+            background: var(--text-tertiary);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--surface-2);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-3);
+        }
+
+        .btn-danger {
+            background: var(--rotten-bg);
+            color: var(--rotten);
+        }
+
+        .btn-danger:hover {
+            background: #FFCDD2;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 13px;
+        }
+
+        .btn-lg {
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: var(--radius-md);
+        }
+
+        /* ===== ANALYZE BUTTON ===== */
+        .analyze-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 14px 40px;
+            font-size: 16px;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all var(--transition);
+            box-shadow: 0 4px 16px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(46, 125, 50, 0.4);
+        }
+
+        .btn-analyze:disabled {
+            background: var(--text-tertiary);
+            box-shadow: none;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .btn-analyze .material-symbols-rounded {
+            font-size: 22px;
+        }
+
+        /* ===== LOADING ===== */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loader {
+            width: 56px;
+            height: 56px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .loading-subtext {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* ===== RESULT PAGE ===== */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .result-image-card {
+            grid-row: span 2;
+        }
+
+        .result-image-card img {
+            width: 100%;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+            max-height: 320px;
+        }
+
+        .freshness-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .freshness-badge.fresh {
+            background: var(--fresh-bg);
+            color: var(--fresh);
+        }
+
+        .freshness-badge.slightly-fresh {
+            background: var(--slightly-fresh-bg);
+            color: var(--slightly-fresh);
+        }
+
+        .freshness-badge.overripe {
+            background: var(--overripe-bg);
+            color: var(--overripe);
+        }
+
+        .freshness-badge.rotten {
+            background: var(--rotten-bg);
+            color: var(--rotten);
+        }
+
+        .result-main-info {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .result-fruit-name {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .confidence-bar-wrap {
+            margin-top: 8px;
+        }
+
+        .confidence-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .confidence-bar {
+            height: 8px;
+            background: var(--surface-3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 1s ease;
+        }
+
+        .result-detail-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--surface-3);
+        }
+
+        .result-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-detail-row .material-symbols-rounded {
+            font-size: 20px;
+            color: var(--primary);
+            width: 28px;
+        }
+
+        .result-detail-row .detail-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            min-width: 120px;
+        }
+
+        .result-detail-row .detail-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .result-explanation {
+            grid-column: 1 / -1;
+        }
+
+        .explanation-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .recommendation-card {
+            grid-column: 1 / -1;
+            border-left: 4px solid var(--primary);
+        }
+
+        .recommendation-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .recommendation-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .recommendation-list li .material-symbols-rounded {
+            font-size: 18px;
+            color: var(--primary);
+            margin-top: 2px;
+        }
+
+        .result-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            padding-top: 8px;
+        }
+
+        /* ===== HISTORY TABLE ===== */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--surface-3);
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: var(--surface-2);
+        }
+
+        .table-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+        }
+
+        .empty-state .material-symbols-rounded {
+            font-size: 56px;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* ===== DASHBOARD ===== */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-card canvas {
+            max-height: 280px;
+        }
+
+        /* ===== REPORT SECTION ===== */
+        .report-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .report-option-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .report-option-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .report-option-card .report-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .report-option-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .report-option-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background: var(--text-primary);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+            max-width: 360px;
+        }
+
+        .toast.success {
+            background: var(--fresh);
+        }
+
+        .toast.error {
+            background: var(--rotten);
+        }
+
+        .toast.warning {
+            background: var(--secondary);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .page {
+                padding: 20px 16px;
+            }
+
+            .topbar {
+                padding: 0 16px;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-image-card {
+                grid-row: auto;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .report-options {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .upload-zone {
+                padding: 32px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== SIDEBAR OVERLAY (mobile) ===== */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 99;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* ===== DELETE CONFIRMATION ===== */
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* History actions */
+        .history-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .history-toolbar .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .history-toolbar .search-box input {
+            border: none;
+            background: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text-primary);
+            width: 100%;
+        }
+
+        .history-toolbar .search-box .material-symbols-rounded {
+            color: var(--text-tertiary);
+            font-size: 20px;
+        }
+
+        /* Pulse animation for analyzing */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <span class="material-symbols-rounded">eco</span>
+            </div>
+            <div>
+                <h1>FreshScan AI</h1>
+                <span>Fruit Analysis</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">Main</div>
+            <button class="nav-item active" data-page="scan" onclick="switchPage('scan')">
+                <span class="material-symbols-rounded">document_scanner</span>
+                New Scan
+            </button>
+            <button class="nav-item" data-page="dashboard" onclick="switchPage('dashboard')">
+                <span class="material-symbols-rounded">dashboard</span>
+                Dashboard
+            </button>
+            <button class="nav-item" data-page="history" onclick="switchPage('history')">
+                <span class="material-symbols-rounded">history</span>
+                Scan History
+            </button>
+            <div class="nav-section-title">Tools</div>
+            <button class="nav-item" data-page="reports" onclick="switchPage('reports')">
+                <span class="material-symbols-rounded">description</span>
+                Reports
+            </button>
+        </nav>
+        <div class="sidebar-footer">
+            <p class="app-version">FreshScan AI v1.0</p>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                    <span class="material-symbols-rounded">menu</span>
+                </button>
+                <h2 id="pageTitle">New Scan</h2>
+            </div>
+            <div class="topbar-right">
+            </div>
+        </header>
+
+        <!-- ==================== SCAN PAGE ==================== -->
+        <div class="page active" id="page-scan">
+            <div class="scan-container">
+                <!-- Upload Zone -->
+                <div class="upload-zone" id="uploadZone">
+                    <input type="file" accept="image/jpeg,image/png,image/jpg" id="fileInput"
+                        onchange="handleFileSelect(event)">
+                    <div class="upload-icon">
+                        <span class="material-symbols-rounded">cloud_upload</span>
+                    </div>
+                    <h3>Upload Fruit Image</h3>
+                    <p>Drag & drop or click to browse. Supports JPG, JPEG, PNG.</p>
+                </div>
+
+                <div class="upload-divider">OR</div>
+
+                <button class="camera-btn" onclick="openCamera()">
+                    <span class="material-symbols-rounded">photo_camera</span>
+                    Capture with Camera
+                </button>
+
+                <!-- Image Preview -->
+                <div class="image-preview-section" id="previewSection">
+                    <div class="preview-card">
+                        <div class="preview-image-wrap">
+                            <img id="previewImage" src="" alt="Preview">
+                        </div>
+                        <div class="preview-actions">
+                            <div class="preview-file-info" id="previewFileInfo">
+                                <strong>fruit.jpg</strong> — 1.2 MB
+                            </div>
+                            <button class="btn btn-danger btn-sm" onclick="clearPreview()">
+                                <span class="material-symbols-rounded">delete</span>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="analyze-section">
+                        <button class="btn-analyze" id="analyzeBtn" onclick="analyzeImage()">
+                            <span class="material-symbols-rounded">science</span>
+                            Analyze Freshness
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== RESULT PAGE ==================== -->
+        <div class="page" id="page-result">
+            <div class="result-grid" id="resultGrid">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- ==================== DASHBOARD PAGE ==================== -->
+        <div class="page" id="page-dashboard">
+            <div class="stats-grid" id="statsGrid">
+                <!-- Filled by JS -->
+            </div>
+            <div class="charts-grid">
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <span class="card-title">Freshness Distribution</span>
+                    </div>
+                    <canvas id="freshnessChart"></canvas>
+                </div>
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <span class="card-title">Scans Over Time</span>
+                    </div>
+                    <canvas id="scansChart"></canvas>
+                </div>
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <span class="card-title">Fruit Types Scanned</span>
+                    </div>
+                    <canvas id="fruitTypesChart"></canvas>
+                </div>
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <span class="card-title">Average Confidence by Category</span>
+                    </div>
+                    <canvas id="confidenceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== HISTORY PAGE ==================== -->
+        <div class="page" id="page-history">
+            <div class="card">
+                <div class="history-toolbar">
+                    <div class="search-box">
+                        <span class="material-symbols-rounded">search</span>
+                        <input type="text" placeholder="Search by fruit name..." id="historySearch"
+                            oninput="renderHistory()">
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn btn-secondary btn-sm" onclick="exportHistoryExcel()">
+                            <span class="material-symbols-rounded">table_view</span>
+                            Excel
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="confirmClearHistory()">
+                            <span class="material-symbols-rounded">delete_sweep</span>
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+                <div style="margin-top:16px;" id="historyTableWrap">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== REPORTS PAGE ==================== -->
+        <div class="page" id="page-reports">
+            <div style="max-width:700px;margin:0 auto;">
+                <div style="text-align:center;margin-bottom:32px;">
+                    <h2 style="font-size:24px;font-weight:800;margin-bottom:8px;">Generate Reports</h2>
+                    <p style="color:var(--text-secondary);font-size:14px;">Export your scan data as PDF or Excel reports
+                        for analysis and record-keeping.</p>
+                </div>
+                <div class="report-options">
+                    <div class="report-option-card" onclick="generatePDFReport()">
+                        <div class="report-icon" style="background:#FFEBEE;color:#C62828;">
+                            <span class="material-symbols-rounded">picture_as_pdf</span>
+                        </div>
+                        <h3>PDF Report</h3>
+                        <p>Full report with statistics, charts summary, and scan details.</p>
+                    </div>
+                    <div class="report-option-card" onclick="exportHistoryExcel()">
+                        <div class="report-icon" style="background:#E8F5E9;color:#2E7D32;">
+                            <span class="material-symbols-rounded">table_chart</span>
+                        </div>
+                        <h3>Excel Report</h3>
+                        <p>Spreadsheet with all scan records for further data analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CAMERA MODAL -->
+    <div class="modal-overlay" id="cameraModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Camera Capture</h3>
+                <button class="modal-close" onclick="closeCamera()">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <video id="cameraFeed" autoplay playsinline></video>
+                <canvas id="cameraCanvas" style="display:none;"></canvas>
+                <div class="camera-controls">
+                    <button class="btn btn-primary btn-lg" onclick="capturePhoto()">
+                        <span class="material-symbols-rounded">photo_camera</span>
+                        Capture
+                    </button>
+                    <button class="btn btn-secondary btn-lg" onclick="closeCamera()">
+                        <span class="material-symbols-rounded">close</span>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLEAR HISTORY MODAL -->
+    <div class="modal-overlay" id="clearModal">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header">
+                <h3>Clear All History</h3>
+                <button class="modal-close" onclick="closeClearModal()">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);font-size:14px;">Are you sure you want to delete all scan records?
+                    This action cannot be undone.</p>
+                <div class="confirm-actions">
+                    <button class="btn btn-secondary" onclick="closeClearModal()">Cancel</button>
+                    <button class="btn btn-danger" onclick="clearAllHistory()">Delete All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text pulse">Analyzing fruit freshness...</div>
+        <div class="loading-subtext">Sending image to AI model for analysis</div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============================
+        //       CONFIGURATION
+        // ============================
+        const OPENROUTER_API_KEY = "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"; // <-- PUT YOUR KEY HERE
+        const AI_MODEL = "openai/gpt-4o-mini";
+        const STORAGE_KEY = "freshscan_history";
+
+        // ============================
+        //       STATE
+        // ============================
+        let currentImageBase64 = null;
+        let currentFileName = "";
+        let currentFileSize = 0;
+        let cameraStream = null;
+        let chartInstances = {};
+
+        // ============================
+        //       NAVIGATION
+        // ============================
+        function switchPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            const pageEl = document.getElementById(`page-${page}`);
+            if (pageEl) pageEl.classList.add('active');
+
+            const navEl = document.querySelector(`.nav-item[data-page="${page}"]`);
+            if (navEl) navEl.classList.add('active');
+
+            const titles = {
+                scan: 'New Scan',
+                result: 'Analysis Result',
+                dashboard: 'Dashboard',
+                history: 'Scan History',
+                reports: 'Reports'
+            };
+            document.getElementById('pageTitle').textContent = titles[page] || 'FreshScan AI';
+
+            if (page === 'dashboard') renderDashboard();
+            if (page === 'history') renderHistory();
+
+            // Close mobile sidebar
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        });
+
+        // ============================
+        //       FILE UPLOAD
+        // ============================
+        const uploadZone = document.getElementById('uploadZone');
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) processFile(file);
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) processFile(file);
+        }
+
+        function processFile(file) {
+            if (!file.type.match(/image\/(jpeg|jpg|png)/)) {
+                showToast('Please select a JPG, JPEG, or PNG image.', 'error');
+                return;
+            }
+
+            currentFileName = file.name;
+            currentFileSize = (file.size / 1024 / 1024).toFixed(2);
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preprocessImage(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function preprocessImage(dataUrl) {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_DIM = 1024;
+                let w = img.width, h = img.height;
+
+                if (w > MAX_DIM || h > MAX_DIM) {
+                    if (w > h) { h = (h / w) * MAX_DIM; w = MAX_DIM; }
+                    else { w = (w / h) * MAX_DIM; h = MAX_DIM; }
+                }
+
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+
+                currentImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                showPreview();
+            };
+            img.src = dataUrl;
+        }
+
+        function showPreview() {
+            document.getElementById('previewImage').src = currentImageBase64;
+            document.getElementById('previewFileInfo').innerHTML = `<strong>${currentFileName || 'camera_capture.jpg'}</strong> — ${currentFileSize || '—'} MB`;
+            document.getElementById('previewSection').classList.add('active');
+        }
+
+        function clearPreview() {
+            currentImageBase64 = null;
+            currentFileName = "";
+            currentFileSize = 0;
+            document.getElementById('previewSection').classList.remove('active');
+            document.getElementById('fileInput').value = '';
+        }
+
+        // ============================
+        //       CAMERA
+        // ============================
+        async function openCamera() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } }
+                });
+                document.getElementById('cameraFeed').srcObject = cameraStream;
+                document.getElementById('cameraModal').classList.add('active');
+            } catch (err) {
+                showToast('Could not access camera. Please check permissions.', 'error');
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('cameraFeed');
+            const canvas = document.getElementById('cameraCanvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+
+            currentFileName = `camera_${Date.now()}.jpg`;
+            currentFileSize = '—';
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            closeCamera();
+            preprocessImage(dataUrl);
+            showToast('Photo captured successfully!', 'success');
+        }
+
+        function closeCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(t => t.stop());
+                cameraStream = null;
+            }
+            document.getElementById('cameraFeed').srcObject = null;
+            document.getElementById('cameraModal').classList.remove('active');
+        }
+
+        // ============================
+        //       AI ANALYSIS
+        // ============================
+        async function analyzeImage() {
+            if (!currentImageBase64) {
+                showToast('Please select or capture an image first.', 'error');
+                return;
+            }
+
+            if (OPENROUTER_API_KEY === "YOUR_OPENROUTER_API_KEY_HERE") {
+                showToast('Please set your OpenRouter API key in the source code.', 'error');
+                return;
+            }
+
+            showLoading(true);
+
+            const systemPrompt = `You are an expert fruit quality analyst. Analyze the given fruit image and respond ONLY with valid JSON in the following exact format (no markdown, no code fences):
+{
+  "fruit_name": "Name of the fruit",
+  "freshness": "Fresh" | "Slightly Fresh" | "Overripe" | "Rotten",
+  "confidence": 95.0,
+  "explanation": "Detailed reason for your assessment",
+  "defects": ["list", "of", "visible", "defects"],
+  "nutrition": {
+    "calories": "52 kcal per 100g",
+    "vitamins": "Key vitamins present",
+    "fiber": "Fiber content"
+  },
+  "shelf_life": "Estimated remaining shelf life",
+  "storage_temp": "Recommended storage temperature",
+  "storage_tips": "Storage recommendations",
+  "recommendations": ["actionable", "suggestions", "based on freshness"]
+}
+
+Guidelines:
+- Confidence should be a number between 0 and 100.
+- Be accurate and detailed in the explanation.
+- If the image does not contain a recognizable fruit, set fruit_name to "Unknown" and freshness to "Unknown" with a low confidence.`;
+
+            try {
+                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": window.location.href,
+                        "X-Title": "FreshScan AI"
+                    },
+                    body: JSON.stringify({
+                        model: AI_MODEL,
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            {
+                                role: "user",
+                                content: [
+                                    { type: "text", text: "Analyze this fruit image for freshness, quality, and provide detailed information." },
+                                    { type: "image_url", image_url: { url: currentImageBase64 } }
+                                ]
+                            }
+                        ],
+                        max_tokens: 1024,
+                        temperature: 0.3
+                    })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error?.message || `API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const content = data.choices?.[0]?.message?.content;
+
+                if (!content) throw new Error('No response from AI model.');
+
+                // Parse JSON from response (handle possible markdown fences)
+                let jsonStr = content.trim();
+                if (jsonStr.startsWith('```')) {
+                    jsonStr = jsonStr.replace(/```json?\n?/g, '').replace(/```$/g, '').trim();
+                }
+
+                const result = JSON.parse(jsonStr);
+                const scanRecord = {
+                    id: Date.now(),
+                    image: currentImageBase64,
+                    fruit_name: result.fruit_name || 'Unknown',
+                    freshness: result.freshness || 'Unknown',
+                    confidence: parseFloat(result.confidence) || 0,
+                    explanation: result.explanation || '',
+                    defects: result.defects || [],
+                    nutrition: result.nutrition || {},
+                    shelf_life: result.shelf_life || 'N/A',
+                    storage_temp: result.storage_temp || 'N/A',
+                    storage_tips: result.storage_tips || '',
+                    recommendations: result.recommendations || [],
+                    timestamp: new Date().toISOString()
+                };
+
+                saveToHistory(scanRecord);
+                displayResult(scanRecord);
+                showToast('Analysis complete!', 'success');
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showToast(`Analysis failed: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ============================
+        //       DISPLAY RESULT
+        // ============================
+        function displayResult(data) {
+            const freshnessClass = data.freshness.toLowerCase().replace(/\s+/g, '-');
+            const freshnessColors = {
+                'fresh': 'var(--fresh)',
+                'slightly-fresh': 'var(--slightly-fresh)',
+                'overripe': 'var(--overripe)',
+                'rotten': 'var(--rotten)'
+            };
+            const barColor = freshnessColors[freshnessClass] || 'var(--primary)';
+
+            const grid = document.getElementById('resultGrid');
+            grid.innerHTML = `
+                <div class="card result-image-card">
+                    <img src="${data.image}" alt="${data.fruit_name}">
+                </div>
+                <div class="card result-main-info">
+                    <div>
+                        <span class="freshness-badge ${freshnessClass}">${data.freshness}</span>
+                    </div>
+                    <h2 class="result-fruit-name">${data.fruit_name}</h2>
+                    <div class="confidence-bar-wrap">
+                        <div class="confidence-label">
+                            <span>Confidence</span>
+                            <span style="color:${barColor}">${data.confidence.toFixed(1)}%</span>
+                        </div>
+                        <div class="confidence-bar">
+                            <div class="confidence-bar-fill" style="width:${data.confidence}%;background:${barColor}"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="result-detail-row">
+                            <span class="material-symbols-rounded">restaurant</span>
+                            <span class="detail-label">Calories</span>
+                            <span class="detail-value">${data.nutrition.calories || 'N/A'}</span>
+                        </div>
+                        <div class="result-detail-row">
+                            <span class="material-symbols-rounded">medication</span>
+                            <span class="detail-label">Vitamins</span>
+                            <span class="detail-value">${data.nutrition.vitamins || 'N/A'}</span>
+                        </div>
+                        <div class="result-detail-row">
+                            <span class="material-symbols-rounded">grass</span>
+                            <span class="detail-label">Fiber</span>
+                            <span class="detail-value">${data.nutrition.fiber || 'N/A'}</span>
+                        </div>
+                        <div class="result-detail-row">
+                            <span class="material-symbols-rounded">schedule</span>
+                            <span class="detail-label">Shelf Life</span>
+                            <span class="detail-value">${data.shelf_life}</span>
+                        </div>
+                        <div class="result-detail-row">
+                            <span class="material-symbols-rounded">thermostat</span>
+                            <span class="detail-label">Storage Temp</span>
+                            <span class="detail-value">${data.storage_temp}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card result-explanation">
+                    <div class="card-header">
+                        <span class="card-title">AI Explanation</span>
+                    </div>
+                    <p class="explanation-text">${data.explanation}</p>
+                    ${data.defects && data.defects.length > 0 ? `
+                        <div style="margin-top:16px;">
+                            <strong style="font-size:13px;color:var(--text-primary);">Detected Defects:</strong>
+                            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+                                ${data.defects.map(d => `<span style="padding:4px 12px;background:var(--overripe-bg);color:var(--overripe);border-radius:16px;font-size:12px;font-weight:600;">${d}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="card recommendation-card">
+                    <div class="card-header">
+                        <span class="card-title">Recommendations</span>
+                    </div>
+                    <ul class="recommendation-list">
+                        ${(data.recommendations || []).map(r => `
+                            <li>
+                                <span class="material-symbols-rounded">check_circle</span>
+                                <span>${r}</span>
+                            </li>
+                        `).join('')}
+                        ${data.storage_tips ? `
+                            <li>
+                                <span class="material-symbols-rounded">inventory_2</span>
+                                <span>${data.storage_tips}</span>
+                            </li>
+                        ` : ''}
+                    </ul>
+                </div>
+                <div class="result-actions">
+                    <button class="btn btn-primary" onclick="switchPage('scan')">
+                        <span class="material-symbols-rounded">document_scanner</span>
+                        New Scan
+                    </button>
+                    <button class="btn btn-secondary" onclick="switchPage('history')">
+                        <span class="material-symbols-rounded">history</span>
+                        View History
+                    </button>
+                    <button class="btn btn-secondary" onclick="switchPage('dashboard')">
+                        <span class="material-symbols-rounded">dashboard</span>
+                        Dashboard
+                    </button>
+                </div>
+            `;
+
+            switchPage('result');
+            clearPreview();
+        }
+
+        // ============================
+        //       HISTORY (LocalStorage)
+        // ============================
+        function getHistory() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } catch { return []; }
+        }
+
+        function saveToHistory(record) {
+            const history = getHistory();
+            history.unshift(record);
+            // Keep max 200 records to avoid storage issues
+            if (history.length > 200) history.length = 200;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        }
+
+        function renderHistory() {
+            const history = getHistory();
+            const search = (document.getElementById('historySearch')?.value || '').toLowerCase();
+            const filtered = search ? history.filter(h => h.fruit_name.toLowerCase().includes(search)) : history;
+            const wrap = document.getElementById('historyTableWrap');
+
+            if (filtered.length === 0) {
+                wrap.innerHTML = `
+                    <div class="empty-state">
+                        <span class="material-symbols-rounded">inbox</span>
+                        <h3>No Scans Found</h3>
+                        <p>${search ? 'No results match your search.' : 'Start by scanning a fruit image.'}</p>
+                    </div>`;
+                return;
+            }
+
+            wrap.innerHTML = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Fruit</th>
+                                <th>Freshness</th>
+                                <th>Confidence</th>
+                                <th>Date & Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filtered.map(item => {
+                const fc = item.freshness.toLowerCase().replace(/\s+/g, '-');
+                const dt = new Date(item.timestamp);
+                const dateStr = dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                const timeStr = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                return `
+                                    <tr>
+                                        <td><img class="table-thumb" src="${item.image}" alt="${item.fruit_name}"></td>
+                                        <td><strong style="color:var(--text-primary)">${item.fruit_name}</strong></td>
+                                        <td><span class="freshness-badge ${fc}">${item.freshness}</span></td>
+                                        <td><strong>${item.confidence.toFixed(1)}%</strong></td>
+                                        <td>${dateStr}<br><span style="font-size:12px;color:var(--text-tertiary)">${timeStr}</span></td>
+                                        <td>
+                                            <button class="btn btn-secondary btn-sm" onclick="viewHistoryItem(${item.id})" title="View Details">
+                                                <span class="material-symbols-rounded" style="font-size:18px;">visibility</span>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="deleteHistoryItem(${item.id})" title="Delete" style="margin-left:4px;">
+                                                <span class="material-symbols-rounded" style="font-size:18px;">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>`;
+            }).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+        }
+
+        function viewHistoryItem(id) {
+            const history = getHistory();
+            const item = history.find(h => h.id === id);
+            if (item) displayResult(item);
+        }
+
+        function deleteHistoryItem(id) {
+            let history = getHistory();
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            renderHistory();
+            showToast('Record deleted.', 'success');
+        }
+
+        function confirmClearHistory() {
+            document.getElementById('clearModal').classList.add('active');
+        }
+
+        function closeClearModal() {
+            document.getElementById('clearModal').classList.remove('active');
+        }
+
+        function clearAllHistory() {
+            localStorage.removeItem(STORAGE_KEY);
+            closeClearModal();
+            renderHistory();
+            showToast('All history cleared.', 'success');
+        }
+
+        // ============================
+        //       DASHBOARD
+        // ============================
+        function renderDashboard() {
+            const history = getHistory();
+            const total = history.length;
+            const freshCount = history.filter(h => h.freshness === 'Fresh').length;
+            const slightlyCount = history.filter(h => h.freshness === 'Slightly Fresh').length;
+            const overripeCount = history.filter(h => h.freshness === 'Overripe').length;
+            const rottenCount = history.filter(h => h.freshness === 'Rotten').length;
+
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon blue"><span class="material-symbols-rounded">document_scanner</span></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Total Scans</div>
+                        <div class="stat-value">${total}</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><span class="material-symbols-rounded">check_circle</span></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Fresh</div>
+                        <div class="stat-value">${freshCount}</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon yellow"><span class="material-symbols-rounded">schedule</span></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Slightly Fresh</div>
+                        <div class="stat-value">${slightlyCount}</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><span class="material-symbols-rounded">warning</span></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Overripe</div>
+                        <div class="stat-value">${overripeCount}</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red"><span class="material-symbols-rounded">dangerous</span></div>
+                    <div class="stat-info">
+                        <div class="stat-label">Rotten</div>
+                        <div class="stat-value">${rottenCount}</div>
+                    </div>
+                </div>
+            `;
+
+            renderCharts(history, freshCount, slightlyCount, overripeCount, rottenCount);
+        }
+
+        function renderCharts(history, fresh, slight, overripe, rotten) {
+            // Destroy old charts
+            Object.values(chartInstances).forEach(c => c.destroy());
+            chartInstances = {};
+
+            const chartColors = {
+                fresh: '#2E7D32',
+                slight: '#F9A825',
+                overripe: '#EF6C00',
+                rotten: '#C62828'
+            };
+
+            // Freshness Doughnut
+            chartInstances.freshness = new Chart(document.getElementById('freshnessChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fresh', 'Slightly Fresh', 'Overripe', 'Rotten'],
+                    datasets: [{
+                        data: [fresh, slight, overripe, rotten],
+                        backgroundColor: [chartColors.fresh, chartColors.slight, chartColors.overripe, chartColors.rotten],
+                        borderWidth: 0,
+                        spacing: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, font: { family: 'Inter', size: 12 } } }
+                    }
+                }
+            });
+
+            // Scans over time (last 7 days)
+            const last7 = [];
+            const labels7 = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const key = d.toISOString().split('T')[0];
+                labels7.push(d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }));
+                last7.push(history.filter(h => h.timestamp.startsWith(key)).length);
+            }
+
+            chartInstances.scans = new Chart(document.getElementById('scansChart'), {
+                type: 'line',
+                data: {
+                    labels: labels7,
+                    datasets: [{
+                        label: 'Scans',
+                        data: last7,
+                        borderColor: '#1565C0',
+                        backgroundColor: 'rgba(21,101,192,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#1565C0',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Inter' } }, grid: { color: '#F0F2F5' } },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
+                    }
+                }
+            });
+
+            // Fruit types bar
+            const fruitMap = {};
+            history.forEach(h => { fruitMap[h.fruit_name] = (fruitMap[h.fruit_name] || 0) + 1; });
+            const sortedFruits = Object.entries(fruitMap).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+            chartInstances.fruitTypes = new Chart(document.getElementById('fruitTypesChart'), {
+                type: 'bar',
+                data: {
+                    labels: sortedFruits.map(f => f[0]),
+                    datasets: [{
+                        label: 'Count',
+                        data: sortedFruits.map(f => f[1]),
+                        backgroundColor: ['#2E7D32', '#1565C0', '#EF6C00', '#C62828', '#6A1B9A', '#00838F', '#F9A825', '#4E342E'],
+                        borderRadius: 6,
+                        barThickness: 32
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Inter' } }, grid: { color: '#F0F2F5' } },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
+                    }
+                }
+            });
+
+            // Average confidence by category
+            const catConf = { 'Fresh': [], 'Slightly Fresh': [], 'Overripe': [], 'Rotten': [] };
+            history.forEach(h => { if (catConf[h.freshness]) catConf[h.freshness].push(h.confidence); });
+            const avgConf = Object.entries(catConf).map(([k, v]) => v.length ? (v.reduce((a, b) => a + b, 0) / v.length).toFixed(1) : 0);
+
+            chartInstances.confidence = new Chart(document.getElementById('confidenceChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Fresh', 'Slightly Fresh', 'Overripe', 'Rotten'],
+                    datasets: [{
+                        label: 'Avg Confidence %',
+                        data: avgConf,
+                        backgroundColor: [chartColors.fresh, chartColors.slight, chartColors.overripe, chartColors.rotten],
+                        borderRadius: 6,
+                        barThickness: 40
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { font: { family: 'Inter' } }, grid: { color: '#F0F2F5' } },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        // ============================
+        //       REPORTS
+        // ============================
+        function generatePDFReport() {
+            const history = getHistory();
+            if (history.length === 0) {
+                showToast('No scan data available. Perform some scans first.', 'warning');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const total = history.length;
+            const fresh = history.filter(h => h.freshness === 'Fresh').length;
+            const slight = history.filter(h => h.freshness === 'Slightly Fresh').length;
+            const overripe = history.filter(h => h.freshness === 'Overripe').length;
+            const rotten = history.filter(h => h.freshness === 'Rotten').length;
+
+            // Header
+            doc.setFillColor(46, 125, 50);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont('helvetica', 'bold');
+            doc.text('FreshScan AI — Analysis Report', 14, 22);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Generated: ${new Date().toLocaleString('en-IN')}`, 14, 32);
+
+            // Summary
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Summary Statistics', 14, 52);
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Total Scans: ${total}`, 14, 62);
+            doc.text(`Fresh: ${fresh} (${total ? ((fresh / total) * 100).toFixed(1) : 0}%)`, 14, 70);
+            doc.text(`Slightly Fresh: ${slight} (${total ? ((slight / total) * 100).toFixed(1) : 0}%)`, 14, 78);
+            doc.text(`Overripe: ${overripe} (${total ? ((overripe / total) * 100).toFixed(1) : 0}%)`, 14, 86);
+            doc.text(`Rotten: ${rotten} (${total ? ((rotten / total) * 100).toFixed(1) : 0}%)`, 14, 94);
+
+            // Table
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Scan Details', 14, 112);
+
+            const tableData = history.map(h => [
+                h.fruit_name,
+                h.freshness,
+                `${h.confidence.toFixed(1)}%`,
+                h.shelf_life || 'N/A',
+                new Date(h.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })
+            ]);
+
+            doc.autoTable({
+                startY: 118,
+                head: [['Fruit', 'Freshness', 'Confidence', 'Shelf Life', 'Date']],
+                body: tableData,
+                theme: 'striped',
+                headStyles: { fillColor: [46, 125, 50], font: 'helvetica', fontStyle: 'bold' },
+                styles: { font: 'helvetica', fontSize: 9 },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
+            });
+
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text(`FreshScan AI Report — Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);
+            }
+
+            doc.save(`FreshScan_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+            showToast('PDF report downloaded!', 'success');
+        }
+
+        function exportHistoryExcel() {
+            const history = getHistory();
+            if (history.length === 0) {
+                showToast('No scan data to export.', 'warning');
+                return;
+            }
+
+            const ws_data = [
+                ['Fruit', 'Freshness', 'Confidence (%)', 'Shelf Life', 'Storage Temp', 'Explanation', 'Date & Time']
+            ];
+            history.forEach(h => {
+                ws_data.push([
+                    h.fruit_name,
+                    h.freshness,
+                    h.confidence.toFixed(1),
+                    h.shelf_life || 'N/A',
+                    h.storage_temp || 'N/A',
+                    h.explanation || '',
+                    new Date(h.timestamp).toLocaleString('en-IN')
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+            // Column widths
+            ws['!cols'] = [
+                { wch: 15 }, { wch: 16 }, { wch: 14 }, { wch: 14 },
+                { wch: 14 }, { wch: 50 }, { wch: 20 }
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, 'Scan History');
+            XLSX.writeFile(wb, `FreshScan_Data_${new Date().toISOString().split('T')[0]}.xlsx`);
+            showToast('Excel report downloaded!', 'success');
+        }
+
+        // ============================
+        //       UTILITIES
+        // ============================
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('active', show);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = {
+                success: 'check_circle',
+                error: 'error',
+                warning: 'warning',
+                info: 'info'
+            };
+            toast.innerHTML = `<span class="material-symbols-rounded" style="font-size:20px;">${icons[type] || 'info'}</span> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = '0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // ============================
+        //       INIT
+        // ============================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start on Scan page
+            switchPage('scan');
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,2951 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart AI Study Planner — IT Final Year Coach</title>
+    <meta name="description"
+        content="AI-driven academic planner for IT final year students. Powered by OpenRouter GPT-4o Mini for personalized roadmaps, placement prep, and exam strategy.">
+
+    <!-- Google Fonts: Material Design Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined|Material+Icons+Round" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Google Material 3 Color System */
+            --md-primary: #1a73e8;
+            --md-primary-light: #d2e3fc;
+            --md-primary-dark: #174ea6;
+            --md-on-primary: #ffffff;
+            --md-secondary: #5f6368;
+            --md-surface: #ffffff;
+            --md-surface-dim: #f8f9fa;
+            --md-surface-container: #f1f3f4;
+            --md-surface-container-high: #e8eaed;
+            --md-surface-container-highest: #dadce0;
+            --md-on-surface: #202124;
+            --md-on-surface-variant: #5f6368;
+            --md-outline: #dadce0;
+            --md-outline-variant: #e8eaed;
+            --md-error: #d93025;
+            --md-error-container: #fce8e6;
+            --md-success: #188038;
+            --md-success-container: #e6f4ea;
+            --md-warning: #e37400;
+            --md-warning-container: #fef7e0;
+            --md-info: #1a73e8;
+            --md-info-container: #e8f0fe;
+
+            /* Elevation shadows (Material Design) */
+            --md-elevation-1: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+            --md-elevation-2: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 2px 6px 2px rgba(60, 64, 67, .15);
+            --md-elevation-3: 0 4px 8px 3px rgba(60, 64, 67, .15), 0 1px 3px rgba(60, 64, 67, .3);
+            --md-elevation-4: 0 6px 10px 4px rgba(60, 64, 67, .15), 0 2px 3px rgba(60, 64, 67, .3);
+
+            /* Typography */
+            --font-display: 'Google Sans', 'Roboto', sans-serif;
+            --font-body: 'Roboto', sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+
+            /* Transitions */
+            --md-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --md-transition-emphasized: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+
+            /* Shape */
+            --md-shape-sm: 8px;
+            --md-shape-md: 12px;
+            --md-shape-lg: 16px;
+            --md-shape-xl: 28px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--md-surface-container-highest);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--md-secondary);
+        }
+
+        body {
+            background-color: var(--md-surface-dim);
+            color: var(--md-on-surface);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ========== ONBOARDING WIZARD ========== */
+        .wizard-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            background: linear-gradient(135deg, #e8f0fe 0%, #f8f9fa 50%, #e6f4ea 100%);
+        }
+
+        .wizard-card {
+            background: var(--md-surface);
+            border-radius: var(--md-shape-xl);
+            width: 100%;
+            max-width: 560px;
+            padding: 40px;
+            box-shadow: var(--md-elevation-3);
+            animation: wizardFade 0.4s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        @keyframes wizardFade {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .wizard-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .wizard-logo {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--md-primary-light);
+            border-radius: 16px;
+        }
+
+        .wizard-logo .material-icons-round {
+            font-size: 28px;
+            color: var(--md-primary);
+        }
+
+        .wizard-header h1 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--md-on-surface);
+            margin-bottom: 4px;
+        }
+
+        .wizard-header p {
+            font-size: 0.875rem;
+            color: var(--md-on-surface-variant);
+        }
+
+        /* Stepper */
+        .wizard-stepper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 32px;
+        }
+
+        .stepper-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stepper-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--md-surface-container);
+            color: var(--md-on-surface-variant);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: var(--md-transition);
+            font-family: var(--font-display);
+        }
+
+        .stepper-step.active .stepper-circle {
+            background: var(--md-primary);
+            color: var(--md-on-primary);
+            box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+        }
+
+        .stepper-step.completed .stepper-circle {
+            background: var(--md-success);
+            color: #fff;
+        }
+
+        .stepper-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+        }
+
+        .stepper-step.active .stepper-label {
+            color: var(--md-primary);
+            font-weight: 700;
+        }
+
+        .stepper-step.completed .stepper-label {
+            color: var(--md-success);
+        }
+
+        .stepper-line {
+            flex: 1;
+            height: 2px;
+            background: var(--md-outline-variant);
+            margin: 0 12px;
+            min-width: 40px;
+        }
+
+        .stepper-line.completed {
+            background: var(--md-success);
+        }
+
+        /* Wizard Views */
+        .wizard-view {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .wizard-view.active {
+            display: flex;
+        }
+
+        /* Form Fields (Material Style) */
+        .form-field {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            background: var(--md-surface);
+            border: 1px solid var(--md-outline);
+            border-radius: var(--md-shape-sm);
+            padding: 12px 16px;
+            color: var(--md-on-surface);
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--md-transition);
+            width: 100%;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--md-primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.15);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-hint {
+            font-size: 0.75rem;
+            color: var(--md-on-surface-variant);
+        }
+
+        /* Range Slider - Material */
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--md-surface-container-highest);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--md-primary);
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(26, 115, 232, 0.3);
+            transition: var(--md-transition);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            box-shadow: 0 0 0 8px rgba(26, 115, 232, 0.1), 0 1px 4px rgba(26, 115, 232, 0.3);
+        }
+
+        .range-value {
+            font-family: var(--font-mono);
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--md-primary);
+            min-width: 48px;
+            text-align: center;
+        }
+
+        /* Buttons - Material */
+        .md-btn {
+            font-family: var(--font-display);
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 10px 24px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--md-transition);
+            letter-spacing: 0.25px;
+            text-decoration: none;
+        }
+
+        .md-btn-filled {
+            background: var(--md-primary);
+            color: var(--md-on-primary);
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .md-btn-filled:hover {
+            box-shadow: var(--md-elevation-2);
+            background: var(--md-primary-dark);
+        }
+
+        .md-btn-tonal {
+            background: var(--md-primary-light);
+            color: var(--md-primary-dark);
+        }
+
+        .md-btn-tonal:hover {
+            background: #bdd2f5;
+        }
+
+        .md-btn-outlined {
+            background: transparent;
+            color: var(--md-primary);
+            border: 1px solid var(--md-outline);
+        }
+
+        .md-btn-outlined:hover {
+            background: var(--md-primary-light);
+            border-color: var(--md-primary);
+        }
+
+        .md-btn-text {
+            background: transparent;
+            color: var(--md-primary);
+            padding: 10px 16px;
+        }
+
+        .md-btn-text:hover {
+            background: rgba(26, 115, 232, 0.08);
+        }
+
+        .md-btn-error {
+            background: var(--md-error-container);
+            color: var(--md-error);
+        }
+
+        .md-btn-error:hover {
+            background: #f5c6c2;
+        }
+
+        .md-btn .material-icons-outlined,
+        .md-btn .material-icons-round {
+            font-size: 18px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-row .md-btn {
+            flex: 1;
+        }
+
+        /* ========== LOADING OVERLAY ========== */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .loader-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 4px solid var(--md-primary-light);
+            border-top-color: var(--md-primary);
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loader-text {
+            text-align: center;
+        }
+
+        .loader-title {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--md-on-surface);
+            margin-bottom: 4px;
+        }
+
+        .loader-subtitle {
+            font-size: 0.8rem;
+            color: var(--md-on-surface-variant);
+        }
+
+        /* ========== APP LAYOUT ========== */
+        .app-shell {
+            display: none;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Navigation Rail / Sidebar */
+        .nav-rail {
+            background: var(--md-surface);
+            border-right: 1px solid var(--md-outline-variant);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-brand {
+            padding: 20px 20px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--md-outline-variant);
+        }
+
+        .nav-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--md-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .nav-brand-icon .material-icons-round {
+            font-size: 20px;
+        }
+
+        .nav-brand-text {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--md-on-surface);
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 12px 12px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 24px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+            cursor: pointer;
+            transition: var(--md-transition);
+            border: none;
+            background: transparent;
+            text-align: left;
+            width: 100%;
+            font-family: var(--font-body);
+        }
+
+        .nav-item:hover {
+            background: var(--md-surface-container);
+            color: var(--md-on-surface);
+        }
+
+        .nav-item.active {
+            background: var(--md-primary-light);
+            color: var(--md-primary-dark);
+            font-weight: 700;
+        }
+
+        .nav-item .material-icons-outlined {
+            font-size: 22px;
+        }
+
+        .nav-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--md-outline-variant);
+        }
+
+        .api-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .api-chip.connected {
+            background: var(--md-success-container);
+            color: var(--md-success);
+        }
+
+        .api-chip.disconnected {
+            background: var(--md-surface-container);
+            color: var(--md-on-surface-variant);
+        }
+
+        .api-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Main Content Area */
+        .main-area {
+            padding: 24px 32px;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            background: var(--md-surface-dim);
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar h1 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--md-on-surface);
+        }
+
+        .top-bar p {
+            font-size: 0.85rem;
+            color: var(--md-on-surface-variant);
+            margin-top: 2px;
+        }
+
+        .stat-chips {
+            display: flex;
+            gap: 12px;
+        }
+
+        .stat-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--md-surface);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: 16px;
+            padding: 8px 16px;
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .stat-chip-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+        }
+
+        .stat-chip-icon.streak {
+            background: #fef7e0;
+        }
+
+        .stat-chip-icon.focus {
+            background: #e8f0fe;
+        }
+
+        .stat-chip-data {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-chip-label {
+            font-size: 0.65rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--md-on-surface-variant);
+        }
+
+        .stat-chip-value {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--md-on-surface);
+        }
+
+        /* Tab Content */
+        .tab-view {
+            display: none;
+            flex-direction: column;
+            gap: 24px;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .tab-view.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Material Cards */
+        .md-card {
+            background: var(--md-surface);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: var(--md-shape-lg);
+            padding: 24px;
+            box-shadow: var(--md-elevation-1);
+            transition: var(--md-transition);
+        }
+
+        .md-card:hover {
+            box-shadow: var(--md-elevation-2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header-left .material-icons-outlined {
+            font-size: 22px;
+            color: var(--md-primary);
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--md-on-surface);
+        }
+
+        .card-badge {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--md-primary);
+            background: var(--md-primary-light);
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sidebar-col {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Session blocks */
+        .session-block {
+            background: var(--md-surface-dim);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: var(--md-shape-md);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: var(--md-transition);
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .session-label {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .session-label.morning {
+            color: var(--md-primary);
+        }
+
+        .session-label.afternoon {
+            color: var(--md-warning);
+        }
+
+        .session-label.evening {
+            color: #7b1fa2;
+        }
+
+        .session-time {
+            font-size: 0.7rem;
+            color: var(--md-on-surface-variant);
+            font-family: var(--font-mono);
+        }
+
+        /* Task Items */
+        .task-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--md-surface);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: var(--md-shape-md);
+            cursor: pointer;
+            transition: var(--md-transition);
+            user-select: none;
+        }
+
+        .task-row:hover {
+            background: var(--md-surface-container);
+            border-color: var(--md-outline);
+        }
+
+        .task-check {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--md-outline);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--md-transition);
+        }
+
+        .task-check .material-icons-round {
+            font-size: 16px;
+            color: #fff;
+            opacity: 0;
+            transition: var(--md-transition);
+        }
+
+        .task-row.done .task-check {
+            background: var(--md-success);
+            border-color: var(--md-success);
+        }
+
+        .task-row.done .task-check .material-icons-round {
+            opacity: 1;
+        }
+
+        .task-text {
+            font-size: 0.875rem;
+            font-weight: 400;
+            line-height: 1.5;
+            flex: 1;
+            color: var(--md-on-surface);
+            transition: var(--md-transition);
+        }
+
+        .task-row.done .task-text {
+            color: var(--md-on-surface-variant);
+            text-decoration: line-through;
+        }
+
+        .priority-tag {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .priority-tag.critical {
+            background: var(--md-error-container);
+            color: var(--md-error);
+        }
+
+        .priority-tag.high {
+            background: var(--md-warning-container);
+            color: var(--md-warning);
+        }
+
+        .priority-tag.medium {
+            background: var(--md-info-container);
+            color: var(--md-info);
+        }
+
+        /* Progress Bar */
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: var(--md-surface-container-high);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        .progress-fill.blue {
+            background: var(--md-primary);
+        }
+
+        .progress-fill.green {
+            background: var(--md-success);
+        }
+
+        .progress-fill.orange {
+            background: var(--md-warning);
+        }
+
+        .progress-fill.purple {
+            background: #7b1fa2;
+        }
+
+        /* Mastery Items */
+        .mastery-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 8px 0;
+        }
+
+        .mastery-item+.mastery-item {
+            border-top: 1px solid var(--md-outline-variant);
+            padding-top: 14px;
+        }
+
+        .mastery-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mastery-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--md-on-surface);
+        }
+
+        .mastery-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--md-primary);
+            font-family: var(--font-mono);
+        }
+
+        /* Control Area */
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stress-section {
+            margin-bottom: 16px;
+        }
+
+        .stress-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .stress-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--md-on-surface);
+        }
+
+        .stress-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 10px;
+        }
+
+        .stress-badge.low {
+            background: var(--md-success-container);
+            color: var(--md-success);
+        }
+
+        .stress-badge.moderate {
+            background: var(--md-warning-container);
+            color: var(--md-warning);
+        }
+
+        .stress-badge.high {
+            background: var(--md-error-container);
+            color: var(--md-error);
+        }
+
+        /* ========== ROADMAP CALENDAR ========== */
+        .roadmap-calendar {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .roadmap-calendar {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .roadmap-calendar {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            border-radius: var(--md-shape-md);
+            border: 1px solid var(--md-outline-variant);
+            background: var(--md-surface);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--md-transition);
+            position: relative;
+        }
+
+        .day-cell:hover {
+            background: var(--md-surface-container);
+            border-color: var(--md-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--md-elevation-2);
+        }
+
+        .day-cell.today {
+            border-color: var(--md-primary);
+            background: var(--md-primary-light);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        .day-cell.all-done {
+            border-color: var(--md-success);
+            background: var(--md-success-container);
+        }
+
+        .day-num {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--md-on-surface);
+        }
+
+        .day-cell.all-done .day-num {
+            color: var(--md-success);
+        }
+
+        .day-sub {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: var(--md-on-surface-variant);
+            font-weight: 500;
+        }
+
+        .day-dot {
+            position: absolute;
+            bottom: 6px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        /* Day drawer */
+        .day-drawer {
+            margin-top: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .day-drawer.open {
+            display: flex;
+        }
+
+        .drawer-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drawer-head h3 {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .drawer-tasks {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ========== PLACEMENT HUB ========== */
+        .subtab-bar {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--md-outline-variant);
+            margin-bottom: 24px;
+        }
+
+        .subtab-btn {
+            background: transparent;
+            border: none;
+            padding: 12px 20px;
+            font-family: var(--font-display);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+            cursor: pointer;
+            transition: var(--md-transition);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .subtab-btn:hover {
+            color: var(--md-primary);
+            background: rgba(26, 115, 232, 0.04);
+        }
+
+        .subtab-btn.active {
+            color: var(--md-primary);
+            border-bottom-color: var(--md-primary);
+            font-weight: 700;
+        }
+
+        .subtab-panel {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .subtab-panel.active {
+            display: flex;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .pattern-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pattern-card {
+            background: var(--md-surface);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: var(--md-shape-md);
+            padding: 20px;
+            box-shadow: var(--md-elevation-1);
+        }
+
+        .pattern-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .pattern-name {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .pattern-count {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--md-primary);
+        }
+
+        .problem-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .problem-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--md-surface-dim);
+            border-radius: var(--md-shape-sm);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--md-transition);
+        }
+
+        .problem-item:hover {
+            background: var(--md-surface-container);
+        }
+
+        .problem-item.done {
+            opacity: 0.5;
+        }
+
+        .problem-item.done .problem-text {
+            text-decoration: line-through;
+        }
+
+        .problem-check {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--md-outline);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--md-transition);
+        }
+
+        .problem-check .material-icons-round {
+            font-size: 14px;
+            color: #fff;
+            opacity: 0;
+            transition: var(--md-transition);
+        }
+
+        .problem-item.done .problem-check {
+            background: var(--md-success);
+            border-color: var(--md-success);
+        }
+
+        .problem-item.done .problem-check .material-icons-round {
+            opacity: 1;
+        }
+
+        /* ========== FLASHCARDS ========== */
+        .flashcard-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            max-width: 560px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .fc-filter-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .fc-filter-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--md-outline);
+            background: var(--md-surface);
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+            cursor: pointer;
+            transition: var(--md-transition);
+        }
+
+        .fc-filter-btn:hover {
+            background: var(--md-surface-container);
+        }
+
+        .fc-filter-btn.active {
+            background: var(--md-primary);
+            color: #fff;
+            border-color: var(--md-primary);
+        }
+
+        .flashcard-viewport {
+            perspective: 1000px;
+            width: 100%;
+            height: 300px;
+            cursor: pointer;
+        }
+
+        .fc-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.2, 0, 0, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flashcard-viewport.flipped .fc-inner {
+            transform: rotateY(180deg);
+        }
+
+        .fc-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: var(--md-shape-lg);
+            border: 1px solid var(--md-outline-variant);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            box-shadow: var(--md-elevation-2);
+        }
+
+        .fc-front {
+            background: var(--md-surface);
+        }
+
+        .fc-back {
+            background: var(--md-info-container);
+            transform: rotateY(180deg);
+            overflow-y: auto;
+            text-align: left;
+            align-items: flex-start;
+        }
+
+        .fc-category {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--md-primary);
+            position: absolute;
+            top: 20px;
+        }
+
+        .fc-question {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.4;
+            color: var(--md-on-surface);
+        }
+
+        .fc-answer {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--md-on-surface);
+        }
+
+        .fc-answer ul,
+        .fc-answer ol {
+            margin-left: 20px;
+        }
+
+        .fc-answer li {
+            margin-bottom: 4px;
+        }
+
+        .fc-answer strong {
+            color: var(--md-primary-dark);
+        }
+
+        .fc-answer code {
+            font-family: var(--font-mono);
+            background: rgba(0, 0, 0, 0.06);
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+
+        .fc-hint {
+            font-size: 0.75rem;
+            color: var(--md-on-surface-variant);
+            position: absolute;
+            bottom: 16px;
+        }
+
+        .fc-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .fc-counter {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--md-on-surface-variant);
+        }
+
+        /* ========== AI CHAT ========== */
+        .chat-shell {
+            display: flex;
+            flex-direction: column;
+            height: 560px;
+            background: var(--md-surface);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: var(--md-shape-lg);
+            box-shadow: var(--md-elevation-2);
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-msg {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            animation: msgSlide 0.25s ease-out;
+        }
+
+        @keyframes msgSlide {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-msg.ai {
+            background: var(--md-surface-container);
+            border: 1px solid var(--md-outline-variant);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-msg.user {
+            background: var(--md-primary);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-msg-sender {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            color: var(--md-primary);
+        }
+
+        .chat-msg.user .chat-msg-sender {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .chat-msg p {
+            margin-bottom: 8px;
+        }
+
+        .chat-msg p:last-child {
+            margin-bottom: 0;
+        }
+
+        .chat-msg ul,
+        .chat-msg ol {
+            margin-left: 16px;
+            margin-bottom: 8px;
+        }
+
+        .chat-msg li {
+            margin-bottom: 4px;
+        }
+
+        .chat-msg code {
+            font-family: var(--font-mono);
+            background: rgba(0, 0, 0, 0.06);
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+        .chat-msg.user code {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .chat-msg pre {
+            font-family: var(--font-mono);
+            background: rgba(0, 0, 0, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+            font-size: 0.8rem;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            padding: 8px 24px;
+            overflow-x: auto;
+            border-top: 1px solid var(--md-outline-variant);
+        }
+
+        .quick-chip {
+            white-space: nowrap;
+            padding: 8px 14px;
+            border-radius: 16px;
+            border: 1px solid var(--md-outline);
+            background: var(--md-surface);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--md-on-surface-variant);
+            cursor: pointer;
+            transition: var(--md-transition);
+            font-family: var(--font-body);
+        }
+
+        .quick-chip:hover {
+            background: var(--md-primary-light);
+            color: var(--md-primary-dark);
+            border-color: var(--md-primary);
+        }
+
+        .chat-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-top: 1px solid var(--md-outline-variant);
+            background: var(--md-surface-dim);
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid var(--md-outline);
+            border-radius: 24px;
+            padding: 10px 20px;
+            font-size: 0.875rem;
+            outline: none;
+            font-family: var(--font-body);
+            color: var(--md-on-surface);
+            background: var(--md-surface);
+            transition: var(--md-transition);
+        }
+
+        .chat-input:focus {
+            border-color: var(--md-primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.15);
+        }
+
+        .chat-send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--md-primary);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--md-transition);
+            flex-shrink: 0;
+        }
+
+        .chat-send-btn:hover {
+            background: var(--md-primary-dark);
+            box-shadow: var(--md-elevation-2);
+        }
+
+        .chat-send-btn .material-icons-round {
+            font-size: 20px;
+        }
+
+        /* Typing animation */
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            padding: 4px 0;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--md-on-surface-variant);
+            border-radius: 50%;
+            animation: typeBounce 1s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes typeBounce {
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translateY(-4px);
+            }
+        }
+
+        /* ========== SETTINGS ========== */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--md-outline-variant);
+        }
+
+        /* HR Block */
+        .hr-block {
+            background: var(--md-surface-dim);
+            border: 1px solid var(--md-outline-variant);
+            border-radius: var(--md-shape-md);
+            padding: 16px;
+        }
+
+        .hr-q {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--md-primary);
+            margin-bottom: 8px;
+        }
+
+        .hr-a {
+            font-size: 0.85rem;
+            color: var(--md-on-surface-variant);
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-rail {
+                display: none;
+            }
+
+            .main-area {
+                padding: 16px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .stat-chips {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loader-icon"></div>
+        <div class="loader-text">
+            <div class="loader-title" id="loaderTitle">Connecting to AI Engine...</div>
+            <div class="loader-subtitle" id="loaderSubtitle">Initializing study planner</div>
+        </div>
+    </div>
+
+    <!-- ========== ONBOARDING WIZARD ========== -->
+    <div id="onboardingContainer" class="wizard-container">
+        <div class="wizard-card">
+            <div class="wizard-header">
+                <div class="wizard-logo">
+                    <span class="material-icons-round">school</span>
+                </div>
+                <h1>Smart AI Study Planner</h1>
+                <p>AI-powered academic coach for IT final year students</p>
+            </div>
+
+            <!-- Stepper -->
+            <div class="wizard-stepper">
+                <div class="stepper-step active" id="step1">
+                    <div class="stepper-circle">1</div>
+                    <span class="stepper-label">API Setup</span>
+                </div>
+                <div class="stepper-line" id="line1"></div>
+                <div class="stepper-step" id="step2">
+                    <div class="stepper-circle">2</div>
+                    <span class="stepper-label">Profile</span>
+                </div>
+                <div class="stepper-line" id="line2"></div>
+                <div class="stepper-step" id="step3">
+                    <div class="stepper-circle">3</div>
+                    <span class="stepper-label">Project</span>
+                </div>
+            </div>
+
+            <!-- Step 1: API -->
+            <div class="wizard-view active" id="wizardView1">
+                <div class="form-field">
+                    <label class="form-label" for="wApiKey">OpenRouter API Key</label>
+                    <input type="password" class="form-input" id="wApiKey" placeholder="sk-or-..." autocomplete="off">
+                    <span class="form-hint">Pre-filled with default key. Leave as-is or enter your own.</span>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label" for="wModel">AI Model</label>
+                    <select class="form-select" id="wModel">
+                        <option value="openai/gpt-4o-mini">openai/gpt-4o-mini (Recommended)</option>
+                        <option value="google/gemini-2.5-flash">google/gemini-2.5-flash</option>
+                        <option value="meta-llama/llama-3.1-8b-instruct:free">meta-llama/llama-3.1-8b-instruct (Free)
+                        </option>
+                    </select>
+                </div>
+
+                <button class="md-btn md-btn-filled" style="width:100%;" onclick="goStep(2)">
+                    <span class="material-icons-outlined">arrow_forward</span>
+                    Continue to Profile
+                </button>
+            </div>
+
+            <!-- Step 2: Profile -->
+            <div class="wizard-view" id="wizardView2">
+                <div class="form-field">
+                    <label class="form-label" for="wName">Your Name</label>
+                    <input type="text" class="form-input" id="wName" value="IT Engineer">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Daily Study Hours</label>
+                    <div class="range-row">
+                        <input type="range" min="3" max="8" value="5" id="wHours"
+                            oninput="document.getElementById('wHoursVal').textContent = this.value + ' hrs'">
+                        <span class="range-value" id="wHoursVal">5 hrs</span>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label" for="wGoal">Primary Career Goal</label>
+                    <select class="form-select" id="wGoal">
+                        <option value="Campus placements (Product/IT roles)">Campus Placements (Product/IT)</option>
+                        <option value="Coding interview readiness (DSA focused)">Coding Interview Readiness (DSA)
+                        </option>
+                        <option value="Full-stack portfolio building">Full-stack Portfolio Building</option>
+                    </select>
+                </div>
+
+                <div class="btn-row">
+                    <button class="md-btn md-btn-outlined" onclick="goStep(1)">
+                        <span class="material-icons-outlined">arrow_back</span> Back
+                    </button>
+                    <button class="md-btn md-btn-filled" onclick="goStep(3)">
+                        <span class="material-icons-outlined">arrow_forward</span> Next
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Project -->
+            <div class="wizard-view" id="wizardView3">
+                <div class="form-field">
+                    <label class="form-label" for="wProjTitle">Project Title</label>
+                    <input type="text" class="form-input" id="wProjTitle"
+                        value="Smart Crop Recommendation System using ML">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label" for="wProjTech">Tech Stack</label>
+                    <input type="text" class="form-input" id="wProjTech" value="React, Node.js, FastAPI, Scikit-learn">
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label" for="wProjDesc">Project Description</label>
+                    <textarea class="form-textarea"
+                        id="wProjDesc">Designing an ML interface that predicts suitable crops based on N-P-K soil metrics. Target: complete ML APIs and build UI screens.</textarea>
+                </div>
+
+                <div class="btn-row">
+                    <button class="md-btn md-btn-outlined" onclick="goStep(2)">
+                        <span class="material-icons-outlined">arrow_back</span> Back
+                    </button>
+                    <button class="md-btn md-btn-filled" onclick="launchPlanner()">
+                        <span class="material-icons-round">rocket_launch</span> Build AI Planner
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MAIN APP SHELL ========== -->
+    <div class="app-shell" id="appShell">
+
+        <!-- Navigation Rail -->
+        <nav class="nav-rail">
+            <div class="nav-brand">
+                <div class="nav-brand-icon">
+                    <span class="material-icons-round">auto_stories</span>
+                </div>
+                <span class="nav-brand-text">StudyPlanner</span>
+            </div>
+
+            <div class="nav-menu">
+                <button class="nav-item active" onclick="switchTab('dashboard')" data-tab="dashboard">
+                    <span class="material-icons-outlined">dashboard</span> Dashboard
+                </button>
+                <button class="nav-item" onclick="switchTab('roadmap')" data-tab="roadmap">
+                    <span class="material-icons-outlined">calendar_month</span> 30-Day Roadmap
+                </button>
+                <button class="nav-item" onclick="switchTab('placement')" data-tab="placement">
+                    <span class="material-icons-outlined">work</span> Placement Hub
+                </button>
+                <button class="nav-item" onclick="switchTab('flashcards')" data-tab="flashcards">
+                    <span class="material-icons-outlined">style</span> Flashcards
+                </button>
+                <button class="nav-item" onclick="switchTab('chat')" data-tab="chat">
+                    <span class="material-icons-outlined">smart_toy</span> AI Coach
+                </button>
+                <button class="nav-item" onclick="switchTab('settings')" data-tab="settings">
+                    <span class="material-icons-outlined">settings</span> Settings
+                </button>
+            </div>
+
+            <div class="nav-footer">
+                <div class="api-chip disconnected" id="apiChip">
+                    <div class="api-dot"></div>
+                    <span>Demo Mode</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-area">
+
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div>
+                    <h1 id="welcomeH1">Welcome!</h1>
+                    <p id="statusLine">Loading...</p>
+                </div>
+                <div class="stat-chips">
+                    <div class="stat-chip">
+                        <div class="stat-chip-icon streak">🔥</div>
+                        <div class="stat-chip-data">
+                            <span class="stat-chip-label">Streak</span>
+                            <span class="stat-chip-value" id="chipStreak">0 Days</span>
+                        </div>
+                    </div>
+                    <div class="stat-chip">
+                        <div class="stat-chip-icon focus">⚡</div>
+                        <div class="stat-chip-data">
+                            <span class="stat-chip-label">Focus</span>
+                            <span class="stat-chip-value" id="chipFocus">70</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: DASHBOARD -->
+            <div id="tab-dashboard" class="tab-view active">
+                <div class="dashboard-grid">
+                    <!-- Schedule -->
+                    <div class="md-card">
+                        <div class="card-header">
+                            <div class="card-header-left">
+                                <span class="material-icons-outlined">event_note</span>
+                                <span class="card-title">Today's Schedule</span>
+                            </div>
+                            <span class="card-badge" id="dayBadge">Day 1</span>
+                        </div>
+                        <div id="scheduleList" style="display:flex;flex-direction:column;gap:16px;"></div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="sidebar-col">
+                        <!-- Behavior Engine -->
+                        <div class="md-card">
+                            <div class="card-header">
+                                <div class="card-header-left">
+                                    <span class="material-icons-outlined">tune</span>
+                                    <span class="card-title">Adaptive Engine</span>
+                                </div>
+                            </div>
+
+                            <div class="stress-section">
+                                <div class="stress-row">
+                                    <span class="stress-label">Stress Level</span>
+                                    <span class="stress-badge moderate" id="stressBadge">Moderate</span>
+                                </div>
+                                <input type="range" min="1" max="3" value="2" id="stressSlider"
+                                    onchange="onStressChange(this.value)" style="width:100%;">
+                            </div>
+
+                            <div class="control-grid">
+                                <button class="md-btn md-btn-error" onclick="adaptMode('exam')">
+                                    <span class="material-icons-outlined">warning</span> Exam Mode
+                                </button>
+                                <button class="md-btn md-btn-tonal" onclick="adaptMode('burnout')">
+                                    <span class="material-icons-outlined">spa</span> Rest Day
+                                </button>
+                            </div>
+
+                            <button class="md-btn md-btn-filled" style="width:100%;margin-top:12px;"
+                                onclick="syncWithAI()">
+                                <span class="material-icons-outlined">sync</span> Sync Plan with AI
+                            </button>
+                        </div>
+
+                        <!-- Subject Mastery -->
+                        <div class="md-card">
+                            <div class="card-header">
+                                <div class="card-header-left">
+                                    <span class="material-icons-outlined">analytics</span>
+                                    <span class="card-title">Subject Mastery</span>
+                                </div>
+                            </div>
+                            <div id="masteryList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: ROADMAP -->
+            <div id="tab-roadmap" class="tab-view">
+                <div class="md-card">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <span class="material-icons-outlined">calendar_month</span>
+                            <span class="card-title">30-Day Study Roadmap</span>
+                        </div>
+                    </div>
+                    <div class="roadmap-calendar" id="roadmapGrid"></div>
+                    <div class="day-drawer" id="dayDrawer"></div>
+                </div>
+            </div>
+
+            <!-- TAB: PLACEMENT -->
+            <div id="tab-placement" class="tab-view">
+                <div class="subtab-bar">
+                    <button class="subtab-btn active" id="stb-dsa" onclick="switchSub('dsa')">DSA Patterns</button>
+                    <button class="subtab-btn" id="stb-resume" onclick="switchSub('resume')">Resume Checklist</button>
+                    <button class="subtab-btn" id="stb-hr" onclick="switchSub('hr')">HR & Viva Prep</button>
+                </div>
+
+                <div class="subtab-panel active" id="panel-dsa">
+                    <div class="pattern-grid" id="dsaGrid"></div>
+                </div>
+
+                <div class="subtab-panel" id="panel-resume">
+                    <div class="md-card">
+                        <div class="card-header">
+                            <div class="card-header-left">
+                                <span class="material-icons-outlined">description</span>
+                                <span class="card-title">Resume Checklist</span>
+                            </div>
+                            <span class="card-badge" id="resumeBadge">0%</span>
+                        </div>
+                        <div class="problem-list" id="resumeList"></div>
+                    </div>
+                </div>
+
+                <div class="subtab-panel" id="panel-hr">
+                    <div class="md-card">
+                        <div class="card-header">
+                            <div class="card-header-left">
+                                <span class="material-icons-outlined">record_voice_over</span>
+                                <span class="card-title">HR & Viva Practice</span>
+                            </div>
+                            <button class="md-btn md-btn-tonal" style="padding:6px 14px;font-size:0.8rem;"
+                                onclick="genMockHR()">
+                                <span class="material-icons-outlined" style="font-size:16px;">psychology</span> AI
+                                Question
+                            </button>
+                        </div>
+                        <div id="hrList" style="display:flex;flex-direction:column;gap:12px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: FLASHCARDS -->
+            <div id="tab-flashcards" class="tab-view">
+                <div class="flashcard-center">
+                    <div class="fc-filter-row" id="fcFilters">
+                        <button class="fc-filter-btn active" onclick="filterFC('ALL', this)">All</button>
+                        <button class="fc-filter-btn" onclick="filterFC('OS', this)">OS</button>
+                        <button class="fc-filter-btn" onclick="filterFC('DBMS', this)">DBMS</button>
+                        <button class="fc-filter-btn" onclick="filterFC('CN', this)">Networks</button>
+                        <button class="fc-filter-btn" onclick="filterFC('OOP', this)">OOP</button>
+                    </div>
+
+                    <div class="flashcard-viewport" id="fcViewport" onclick="flipFC()">
+                        <div class="fc-inner" id="fcInner">
+                            <div class="fc-face fc-front">
+                                <span class="fc-category" id="fcCatF">CATEGORY</span>
+                                <div class="fc-question" id="fcQ">Loading...</div>
+                                <span class="fc-hint">Click to reveal answer</span>
+                            </div>
+                            <div class="fc-face fc-back">
+                                <span class="fc-category" id="fcCatB">CATEGORY</span>
+                                <div class="fc-answer" id="fcA">Loading...</div>
+                                <span class="fc-hint">Click to flip back</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fc-nav">
+                        <button class="md-btn md-btn-outlined" onclick="prevFC()">
+                            <span class="material-icons-outlined">chevron_left</span> Prev
+                        </button>
+                        <span class="fc-counter" id="fcCounter">0 / 0</span>
+                        <button class="md-btn md-btn-outlined" onclick="nextFC()">
+                            Next <span class="material-icons-outlined">chevron_right</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: AI COACH -->
+            <div id="tab-chat" class="tab-view">
+                <div class="chat-shell">
+                    <div class="chat-messages" id="chatBox"></div>
+
+                    <div class="quick-actions">
+                        <button class="quick-chip"
+                            onclick="quickPrompt('Review my final-year project progress and suggest next sprint tasks.')">🛠
+                            Project Review</button>
+                        <button class="quick-chip"
+                            onclick="quickPrompt('Give me a challenging DSA mock question for coding interview practice.')">💻
+                            DSA Mock</button>
+                        <button class="quick-chip"
+                            onclick="quickPrompt('Start a short quiz on Operating Systems concepts.')">🧠 OS
+                            Quiz</button>
+                        <button class="quick-chip"
+                            onclick="quickPrompt('I am falling behind on my study plan. Help me recalibrate my schedule.')">⚠️
+                            Recalibrate</button>
+                    </div>
+
+                    <form class="chat-input-row" onsubmit="onChatSubmit(event)">
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Ask your AI academic coach..."
+                            autocomplete="off">
+                        <button type="submit" class="chat-send-btn">
+                            <span class="material-icons-round">send</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB: SETTINGS -->
+            <div id="tab-settings" class="tab-view">
+                <div class="md-card">
+                    <div class="card-header">
+                        <div class="card-header-left">
+                            <span class="material-icons-outlined">settings</span>
+                            <span class="card-title">Configuration</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="form-field">
+                            <label class="form-label" for="sApiKey">OpenRouter API Key</label>
+                            <input type="password" class="form-input" id="sApiKey" placeholder="sk-or-...">
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label" for="sModel">Model</label>
+                            <select class="form-select" id="sModel">
+                                <option value="openai/gpt-4o-mini">openai/gpt-4o-mini</option>
+                                <option value="google/gemini-2.5-flash">google/gemini-2.5-flash</option>
+                                <option value="meta-llama/llama-3.1-8b-instruct:free">
+                                    meta-llama/llama-3.1-8b-instruct:free</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-actions">
+                        <button class="md-btn md-btn-error" onclick="resetApp()">
+                            <span class="material-icons-outlined">delete_forever</span> Reset All Data
+                        </button>
+                        <button class="md-btn md-btn-filled" onclick="saveSettings()">
+                            <span class="material-icons-outlined">save</span> Save Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // ===================== FLASHCARD DATA =====================
+        const FLASHCARDS = [
+            { cat: "OS", q: "What is the difference between a process and a thread?", a: "A <strong>process</strong> is an executing program instance with its own virtual address space, memory segments (code, heap, stack), and file descriptors. A <strong>thread</strong> is the smallest execution unit within a process. Multiple threads under one process share the same heap, global variables, and code section, but maintain their own registers and execution stacks." },
+            { cat: "OS", q: "What is thrashing in virtual memory?", a: "<strong>Thrashing</strong> occurs when an OS spends more time swapping pages in and out of secondary storage (disk) than executing instructions. This happens when the active working sets of all running processes exceed the available physical RAM, resulting in continuous page faults and severe system slowdown." },
+            { cat: "OS", q: "Explain the Critical Section Problem.", a: "A <strong>Critical Section</strong> is a code segment where shared resources are accessed. A <strong>Semaphore</strong> is an integer variable accessed via atomic operations <code>wait()</code> and <code>signal()</code>. Mutexes (binary semaphores) ensure mutual exclusion so only one process runs the critical section at once." },
+            { cat: "DBMS", q: "What are ACID properties?", a: "<ul><li><strong>Atomicity:</strong> Transactions execute completely or not at all.</li><li><strong>Consistency:</strong> Database state preserves all integrity constraints.</li><li><strong>Isolation:</strong> Concurrent transactions run independently.</li><li><strong>Durability:</strong> Completed transactions persist even during crashes.</li></ul>" },
+            { cat: "DBMS", q: "Explain 1NF, 2NF, and 3NF.", a: "<ul><li><strong>1NF:</strong> Atomic values only (no repeated groups).</li><li><strong>2NF:</strong> 1NF + no partial dependencies on composite keys.</li><li><strong>3NF:</strong> 2NF + no transitive dependencies.</li></ul>" },
+            { cat: "CN", q: "Compare TCP and UDP protocols.", a: "<strong>TCP</strong> is connection-oriented, reliable (handshakes, acknowledgment, flow control), but higher overhead. <strong>UDP</strong> is connectionless, fast, lightweight, no delivery verification (ideal for gaming, VoIP)." },
+            { cat: "CN", q: "What is DNS and how does it work?", a: "<strong>DNS</strong> maps domain names to IP addresses via: DNS Resolver → Root Server → TLD Server → Authoritative Nameserver, with local caching for speed." },
+            { cat: "OOP", q: "What are the 4 pillars of OOP?", a: "<ul><li><strong>Encapsulation:</strong> Bundling data/methods, restricting access.</li><li><strong>Abstraction:</strong> Hiding complexity, showing essential interfaces.</li><li><strong>Inheritance:</strong> Child classes inherit from parents.</li><li><strong>Polymorphism:</strong> Same action, different implementations (overloading/overriding).</li></ul>" }
+        ];
+
+        const DSA_PATTERNS = {
+            "Arrays & Hashing": [
+                { name: "Two Sum", done: false },
+                { name: "Valid Anagram", done: false },
+                { name: "Group Anagrams", done: false }
+            ],
+            "Two Pointers": [
+                { name: "Valid Palindrome", done: false },
+                { name: "Two Sum II (Sorted)", done: false },
+                { name: "Container With Most Water", done: false }
+            ],
+            "Sliding Window": [
+                { name: "Best Time to Buy & Sell Stock", done: false },
+                { name: "Longest Substring Without Repeating Chars", done: false }
+            ],
+            "Trees & Graphs": [
+                { name: "Invert Binary Tree", done: false },
+                { name: "Max Depth of Binary Tree", done: false },
+                { name: "Number of Islands (DFS/BFS)", done: false }
+            ],
+            "Dynamic Programming": [
+                { name: "Climbing Stairs", done: false },
+                { name: "Coin Change", done: false }
+            ]
+        };
+
+        const RESUME_ITEMS = [
+            { text: "Include GitHub & LinkedIn links", done: false },
+            { text: "Write professional summary for IT roles", done: false },
+            { text: "Format project using STAR framework", done: false },
+            { text: "List technical skills (Python, SQL, React, etc.)", done: false },
+            { text: "Single page, clean formatting", done: false }
+        ];
+
+        const HR_ITEMS = [
+            { q: "Tell me about yourself.", a: "A 2-minute pitch: academic status, coding strengths, final year project, and career goals." },
+            { q: "How did you design your project?", a: "Use STAR: Situation, Task, Action, Result. Explain tech stack decisions." },
+            { q: "How do you handle deadline stress?", a: "Discuss prioritization, structured schedules, and productivity optimization." }
+        ];
+
+        // ===================== APP STATE =====================
+        let S = {
+            apiKey: "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",
+            model: "openai/gpt-4o-mini",
+            profile: { name: "", hours: 5, goal: "", projTitle: "", projTech: "", projDesc: "" },
+            hasPlan: false,
+            day: 1,
+            streak: 0,
+            focus: 70,
+            stress: 2,
+            mode: "Study & Prep Mode",
+            roadmap: [],
+            dsa: JSON.parse(JSON.stringify(DSA_PATTERNS)),
+            resume: JSON.parse(JSON.stringify(RESUME_ITEMS)),
+            hr: JSON.parse(JSON.stringify(HR_ITEMS)),
+            chat: [{ role: "assistant", content: "Welcome! I'm your AI study coach. Set up your profile or ask me anything about your IT syllabus, placement prep, or project." }]
+        };
+
+        let activeTab = "dashboard";
+        let fcIdx = 0;
+        let fcFiltered = [...FLASHCARDS];
+
+        // ===================== INIT =====================
+        window.addEventListener("DOMContentLoaded", () => {
+            loadState();
+            // Pre-fill wizard API key
+            document.getElementById("wApiKey").value = S.apiKey;
+            updateApiChip();
+
+            if (S.hasPlan) {
+                document.getElementById("onboardingContainer").style.display = "none";
+                document.getElementById("appShell").style.display = "grid";
+                refreshUI();
+            } else {
+                document.getElementById("onboardingContainer").style.display = "flex";
+                document.getElementById("appShell").style.display = "none";
+            }
+        });
+
+        function save() { localStorage.setItem("sp_v3", JSON.stringify(S)); }
+        function loadState() {
+            try {
+                const d = localStorage.getItem("sp_v3");
+                if (d) S = { ...S, ...JSON.parse(d) };
+            } catch (e) { console.error(e); }
+        }
+
+        // ===================== WIZARD =====================
+        let wizStep = 1;
+
+        function goStep(n) {
+            // Save current step data
+            if (wizStep === 1) {
+                const key = document.getElementById("wApiKey").value.trim();
+                if (key) S.apiKey = key;
+                S.model = document.getElementById("wModel").value;
+            }
+
+            document.getElementById(`wizardView${wizStep}`).classList.remove("active");
+            document.getElementById(`wizardView${n}`).classList.add("active");
+
+            // Update stepper visuals
+            for (let i = 1; i <= 3; i++) {
+                const step = document.getElementById(`step${i}`);
+                const line = document.getElementById(`line${i}`);
+                step.classList.remove("active", "completed");
+                if (line) line.classList.remove("completed");
+
+                if (i < n) {
+                    step.classList.add("completed");
+                    if (line) line.classList.add("completed");
+                } else if (i === n) {
+                    step.classList.add("active");
+                }
+            }
+
+            wizStep = n;
+        }
+
+        async function launchPlanner() {
+            // Gather all data
+            const key = document.getElementById("wApiKey").value.trim();
+            if (key) S.apiKey = key;
+            S.model = document.getElementById("wModel").value;
+            S.profile.name = document.getElementById("wName").value.trim() || "Student";
+            S.profile.hours = parseInt(document.getElementById("wHours").value);
+            S.profile.goal = document.getElementById("wGoal").value;
+            S.profile.projTitle = document.getElementById("wProjTitle").value.trim() || "Final Project";
+            S.profile.projTech = document.getElementById("wProjTech").value.trim() || "IT Stack";
+            S.profile.projDesc = document.getElementById("wProjDesc").value.trim() || "Project work";
+
+            const overlay = document.getElementById("loadingOverlay");
+            overlay.style.display = "flex";
+
+            try {
+                if (S.apiKey && S.apiKey.startsWith("sk-or-")) {
+                    setLoader("Connecting to OpenRouter...", "Validating API credentials");
+                    S.roadmap = await fetchAIPlan();
+                } else {
+                    setLoader("Demo Mode...", "Generating local study plan");
+                    await wait(1000);
+                    S.roadmap = buildLocalPlan();
+                }
+
+                S.hasPlan = true;
+                S.day = 1;
+                S.streak = 0;
+                S.focus = 70;
+                S.chat = [{ role: "assistant", content: `Hello **${S.profile.name}**! Your personalized 30-day plan is ready. Focus: **${S.profile.goal}**. Project: **"${S.profile.projTitle}"**. Let's get started!` }];
+
+                save();
+                updateApiChip();
+                overlay.style.display = "none";
+                document.getElementById("onboardingContainer").style.display = "none";
+                document.getElementById("appShell").style.display = "grid";
+                refreshUI();
+            } catch (err) {
+                console.error("Plan generation error:", err);
+                overlay.style.display = "none";
+                // Fallback to local plan on error
+                S.roadmap = buildLocalPlan();
+                S.hasPlan = true;
+                S.day = 1;
+                S.chat = [{ role: "assistant", content: `API had an issue (${err.message}), so I generated a local plan. You can still use the AI Coach chat! Check Settings to update your API key.` }];
+                save();
+                updateApiChip();
+                document.getElementById("onboardingContainer").style.display = "none";
+                document.getElementById("appShell").style.display = "grid";
+                refreshUI();
+            }
+        }
+
+        function setLoader(t, s) {
+            document.getElementById("loaderTitle").textContent = t;
+            document.getElementById("loaderSubtitle").textContent = s;
+        }
+
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+
+        // ===================== LOCAL PLAN BUILDER =====================
+        function buildLocalPlan() {
+            const phases = ["Foundation", "Practice", "Placement"];
+            const tasks = {
+                Foundation: [
+                    { m: "Arrays: Two Sum, Valid Anagram practice", p: "Project: Set up repository & database models", e: "DBMS: Review relational models & constraints" },
+                    { m: "Two-pointer: Valid Palindrome, sorted arrays", p: "Project: UI wireframes & component layout", e: "OS: Process states & thread management" },
+                    { m: "Sliding window: Buy & sell stock problems", p: "Project: Configure database & API routes", e: "Networks: OSI layers & data link concepts" }
+                ],
+                Practice: [
+                    { m: "Binary trees: Recursive depth, inversion", p: "Project: User auth APIs & JWT handlers", e: "DBMS: Normalization rules & SQL joins" },
+                    { m: "BFS/DFS: Island count, graph traversals", p: "Project: Connect frontend to dashboard APIs", e: "OS: Mutex, process synchronization" },
+                    { m: "Graph algorithms: DFS, shortest path", p: "Project: Optimize ML queries, form controls", e: "OOP: Abstract classes vs interfaces" }
+                ],
+                Placement: [
+                    { m: "DP: Climbing stairs, coin change", p: "Project: Unit tests & load benchmarks", e: "HR: Introduction stories & STAR format" },
+                    { m: "Complex DP: Matrix chain, recursion trees", p: "Project: Documentation & setup guide", e: "Networks: TCP vs UDP handshakes" },
+                    { m: "Full mock coding test under time pressure", p: "Project: Final deck & viva preparation", e: "HR: Mock interview practice" }
+                ]
+            };
+
+            const plan = [];
+            for (let i = 1; i <= 30; i++) {
+                const phaseIdx = i <= 10 ? 0 : i <= 20 ? 1 : 2;
+                const phase = phases[phaseIdx];
+                const t = tasks[phase][(i - 1) % 3];
+                plan.push({
+                    day: i, phase,
+                    morning: { task: t.m + ` (${S.profile.hours}h target)`, completed: false },
+                    afternoon: { task: `${t.p} [${S.profile.projTech}]`, completed: false },
+                    evening: { task: t.e, completed: false }
+                });
+            }
+            return plan;
+        }
+
+        // ===================== OPENROUTER API =====================
+        async function fetchAIPlan() {
+            setLoader("Querying AI model...", `Using ${S.model}`);
+
+            const sysPrompt = "You are a professional study strategist. Output ONLY raw JSON matching the schema exactly. No markdown, no code blocks, no explanations. Just a raw JSON array.";
+
+            const userPrompt = `Generate a 30-day study plan for a final year IT student:
+Name: ${S.profile.name}
+Study hours: ${S.profile.hours} hours/day
+Project: "${S.profile.projTitle}" using [${S.profile.projTech}]
+Project Goal: ${S.profile.projDesc}
+Career Goal: ${S.profile.goal}
+
+Output a valid JSON array of exactly 30 objects:
+[{"day":1,"phase":"Foundation","morning":{"task":"..."},"afternoon":{"task":"..."},"evening":{"task":"..."}}]
+Phases: days 1-10 = "Foundation", 11-20 = "Practice", 21-30 = "Placement".
+Morning = DSA/coding, Afternoon = project work, Evening = theory revision.
+Do NOT wrap in markdown code blocks.`;
+
+            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${S.apiKey}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": window.location.href || "https://localhost",
+                    "X-Title": "Smart AI Study Planner"
+                },
+                body: JSON.stringify({
+                    model: S.model,
+                    messages: [
+                        { role: "system", content: sysPrompt },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 4000
+                })
+            });
+
+            if (!res.ok) {
+                const errBody = await res.text().catch(() => "");
+                throw new Error(`HTTP ${res.status}: ${errBody.substring(0, 200)}`);
+            }
+
+            const json = await res.json();
+
+            if (!json.choices || !json.choices[0] || !json.choices[0].message) {
+                throw new Error("Invalid API response structure");
+            }
+
+            let raw = json.choices[0].message.content.trim();
+
+            // Strip markdown code blocks if model added them
+            if (raw.includes("```")) {
+                const m = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+                if (m && m[1]) raw = m[1].trim();
+            }
+
+            let parsed = JSON.parse(raw);
+            if (parsed.days) parsed = parsed.days;
+            if (parsed.plan) parsed = parsed.plan;
+            if (parsed.roadmap) parsed = parsed.roadmap;
+
+            if (!Array.isArray(parsed) || parsed.length === 0) {
+                throw new Error("API returned invalid plan structure");
+            }
+
+            setLoader("Processing plan...", `Received ${parsed.length} days`);
+            await wait(500);
+
+            return parsed.map(d => ({
+                day: d.day,
+                phase: d.phase || "Foundation",
+                morning: { task: typeof d.morning === "string" ? d.morning : (d.morning?.task || "DSA practice"), completed: false },
+                afternoon: { task: typeof d.afternoon === "string" ? d.afternoon : (d.afternoon?.task || "Project work"), completed: false },
+                evening: { task: typeof d.evening === "string" ? d.evening : (d.evening?.task || "Theory revision"), completed: false }
+            }));
+        }
+
+        async function chatWithAI(userMsg) {
+            if (!S.apiKey || !S.apiKey.startsWith("sk-or-")) {
+                return localCoachReply(userMsg);
+            }
+
+            const context = `You are an IT placement mentor and study coach.
+Student: ${S.profile.name}, ${S.profile.hours}h/day study time.
+Project: "${S.profile.projTitle}" using [${S.profile.projTech}].
+Day ${S.day} of 30. Stress mode: ${S.mode}.
+Be structured, use bullet points, be encouraging and professional.`;
+
+            const messages = [
+                { role: "system", content: context },
+                ...S.chat.slice(-6)
+            ];
+
+            const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${S.apiKey}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": window.location.href || "https://localhost",
+                    "X-Title": "AI Study Coach"
+                },
+                body: JSON.stringify({
+                    model: S.model,
+                    messages,
+                    temperature: 0.7,
+                    max_tokens: 1500
+                })
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+
+            if (!json.choices || !json.choices[0]) throw new Error("Invalid response");
+
+            return json.choices[0].message.content;
+        }
+
+        function localCoachReply(msg) {
+            const lower = msg.toLowerCase();
+            if (lower.includes("project")) {
+                return `### 🛠 Project Review: "${S.profile.projTitle}"\n\nUsing **${S.profile.projTech}**, verify:\n1. Core data APIs return valid schema\n2. UI mockups are drafted\n3. Architecture slides are prepared\n\nWould you like to break this into sprint tasks?`;
+            }
+            if (lower.includes("dsa") || lower.includes("interview") || lower.includes("mock")) {
+                return `### 💻 DSA Mock: Two Sum II\n\nInput: \`numbers = [2,7,11,15]\`, \`target = 9\`\n\nSolve using two-pointer approach in O(N) time, O(1) space. Share your solution!`;
+            }
+            if (lower.includes("os") || lower.includes("operating")) {
+                return `### 🧠 OS Quick Quiz\n\n**Q:** What is the difference between preemptive and non-preemptive scheduling?\n\n*Think about it, then ask me for the answer!*`;
+            }
+            if (lower.includes("behind") || lower.includes("recalibrate")) {
+                return `### ⚠️ Recalibration Plan\n\n1. **Prioritize:** Focus on high-weight topics first\n2. **Reduce scope:** Cover essentials, skip advanced topics\n3. **Time block:** 2h DSA + 2h Project + 1h revision daily\n4. **Rest:** Take 15-min breaks every 90 minutes\n\nWant me to adjust your roadmap?`;
+            }
+            return `I'm here to help! Ask about:\n- **DSA** patterns & mock interviews\n- **Project** sprint planning\n- **OS/DBMS/CN/OOP** concepts\n- **Placement** preparation tips`;
+        }
+
+        // ===================== UI REFRESH =====================
+        function refreshUI() {
+            document.getElementById("welcomeH1").textContent = `Welcome, ${S.profile.name}!`;
+            document.getElementById("statusLine").textContent = `Status: ${S.mode} • Day ${S.day}/30`;
+            document.getElementById("chipStreak").textContent = `${S.streak} Days`;
+            document.getElementById("chipFocus").textContent = `${S.focus}/100`;
+            document.getElementById("sApiKey").value = S.apiKey;
+            document.getElementById("sModel").value = S.model;
+            document.getElementById("stressSlider").value = S.stress;
+            updateStressBadge(S.stress);
+            updateApiChip();
+
+            renderSchedule();
+            renderMastery();
+            renderRoadmap();
+            renderDSA();
+            renderResume();
+            renderHR();
+            renderFC();
+            renderChat();
+        }
+
+        function updateApiChip() {
+            const chip = document.getElementById("apiChip");
+            if (S.apiKey && S.apiKey.startsWith("sk-or-")) {
+                chip.className = "api-chip connected";
+                chip.querySelector("span").textContent = "OpenRouter Connected";
+            } else {
+                chip.className = "api-chip disconnected";
+                chip.querySelector("span").textContent = "Demo Mode";
+            }
+        }
+
+        // ===================== TAB SWITCHING =====================
+        function switchTab(id) {
+            activeTab = id;
+            document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+            document.querySelectorAll(".tab-view").forEach(t => t.classList.remove("active"));
+            const btn = document.querySelector(`.nav-item[data-tab="${id}"]`);
+            if (btn) btn.classList.add("active");
+            const tab = document.getElementById(`tab-${id}`);
+            if (tab) tab.classList.add("active");
+        }
+
+        function switchSub(id) {
+            document.querySelectorAll(".subtab-btn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".subtab-panel").forEach(p => p.classList.remove("active"));
+            document.getElementById(`stb-${id}`).classList.add("active");
+            document.getElementById(`panel-${id}`).classList.add("active");
+        }
+
+        // ===================== DASHBOARD =====================
+        function renderSchedule() {
+            const d = S.roadmap[S.day - 1];
+            if (!d) return;
+
+            document.getElementById("dayBadge").textContent = `Day ${S.day} / 30 — ${d.phase}`;
+
+            const sessions = [
+                { key: "morning", label: "Morning Session", time: "08:00 – 11:00 AM (DSA)", priority: "critical", cls: "morning" },
+                { key: "afternoon", label: "Afternoon Session", time: "02:00 – 05:00 PM (Project)", priority: "high", cls: "afternoon" },
+                { key: "evening", label: "Evening Session", time: "07:00 – 09:00 PM (Revision)", priority: "medium", cls: "evening" }
+            ];
+
+            const el = document.getElementById("scheduleList");
+            el.innerHTML = sessions.map(s => `
+        <div class="session-block">
+          <div class="session-header">
+            <span class="session-label ${s.cls}">
+              <span class="material-icons-outlined" style="font-size:16px;">${s.key === 'morning' ? 'wb_sunny' : s.key === 'afternoon' ? 'wb_cloudy' : 'dark_mode'}</span>
+              ${s.label}
+            </span>
+            <span class="session-time">${s.time}</span>
+          </div>
+          <div class="task-row ${d[s.key].completed ? 'done' : ''}" onclick="toggleTask(${S.day},'${s.key}')">
+            <div class="task-check"><span class="material-icons-round">check</span></div>
+            <span class="task-text">${d[s.key].task}</span>
+            <span class="priority-tag ${s.priority}">${s.priority}</span>
+          </div>
+        </div>
+      `).join("");
+
+            recalcMetrics();
+        }
+
+        function toggleTask(day, key) {
+            const d = S.roadmap[day - 1];
+            d[key].completed = !d[key].completed;
+            save();
+            renderSchedule();
+            if (activeTab === "roadmap") renderRoadmap();
+        }
+
+        function recalcMetrics() {
+            let done = 0, count = 0;
+            const start = Math.max(0, S.day - 3);
+            for (let i = start; i < S.day; i++) {
+                const d = S.roadmap[i];
+                if (!d) continue;
+                count += 3;
+                if (d.morning.completed) done++;
+                if (d.afternoon.completed) done++;
+                if (d.evening.completed) done++;
+            }
+            S.focus = count > 0 ? Math.round(50 + (done / count) * 50) : 70;
+
+            let streak = 0;
+            for (let i = S.day - 1; i >= 0; i--) {
+                const d = S.roadmap[i];
+                if (d.morning.completed || d.afternoon.completed || d.evening.completed) streak++;
+                else break;
+            }
+            S.streak = streak;
+
+            document.getElementById("chipStreak").textContent = `${S.streak} Days`;
+            document.getElementById("chipFocus").textContent = `${S.focus}/100`;
+        }
+
+        function renderMastery() {
+            const items = [
+                { name: "DSA & Problem Solving", score: calcDSA(), color: "blue" },
+                { name: "DBMS Concepts", score: 60, color: "orange" },
+                { name: "Operating Systems", score: 70, color: "purple" },
+                { name: "Computer Networks", score: 50, color: "green" }
+            ];
+
+            document.getElementById("masteryList").innerHTML = items.map(m => `
+        <div class="mastery-item">
+          <div class="mastery-row">
+            <span class="mastery-name">${m.name}</span>
+            <span class="mastery-value">${m.score}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill ${m.color}" style="width:${m.score}%"></div>
+          </div>
+        </div>
+      `).join("");
+        }
+
+        function calcDSA() {
+            let total = 0, done = 0;
+            for (const k in S.dsa) {
+                S.dsa[k].forEach(p => { total++; if (p.done) done++; });
+            }
+            return total > 0 ? Math.round((done / total) * 100) : 0;
+        }
+
+        // Stress
+        function onStressChange(val) {
+            S.stress = parseInt(val);
+            updateStressBadge(S.stress);
+            S.mode = S.stress === 3 ? "Recovery Mode" : "Study & Prep Mode";
+            document.getElementById("statusLine").textContent = `Status: ${S.mode} • Day ${S.day}/30`;
+            save();
+        }
+
+        function updateStressBadge(level) {
+            const badge = document.getElementById("stressBadge");
+            badge.className = "stress-badge";
+            if (level === 1) { badge.textContent = "Low"; badge.classList.add("low"); }
+            else if (level === 2) { badge.textContent = "Moderate"; badge.classList.add("moderate"); }
+            else { badge.textContent = "High"; badge.classList.add("high"); }
+        }
+
+        function adaptMode(mode) {
+            if (mode === "exam") {
+                S.mode = "Exam Mode";
+                S.roadmap.forEach((d, i) => {
+                    if (i >= S.day - 1) {
+                        d.evening.task = "Exam prep: Review core definitions & solve mock papers";
+                        d.evening.completed = false;
+                    }
+                });
+                alert("Exam Mode activated! Evening sessions switched to revision.");
+            } else {
+                S.mode = "Recovery Mode";
+                const today = S.roadmap[S.day - 1];
+                today.morning = { task: "Light concept review (30 min)", completed: false };
+                today.afternoon = { task: "Documentation only, no heavy coding", completed: false };
+                today.evening = { task: "Rest & mental health break", completed: false };
+                alert("Rest day activated. Workload reduced.");
+            }
+            save();
+            refreshUI();
+        }
+
+        async function syncWithAI() {
+            const overlay = document.getElementById("loadingOverlay");
+            overlay.style.display = "flex";
+            setLoader("Recalculating plan...", "Syncing with AI");
+
+            try {
+                if (S.apiKey && S.apiKey.startsWith("sk-or-")) {
+                    S.roadmap = await fetchAIPlan();
+                } else {
+                    await wait(1000);
+                    S.roadmap = buildLocalPlan();
+                }
+                S.day = 1;
+                save();
+                overlay.style.display = "none";
+                refreshUI();
+                alert("Plan updated successfully!");
+            } catch (err) {
+                overlay.style.display = "none";
+                alert("Sync failed: " + err.message);
+            }
+        }
+
+        // ===================== ROADMAP =====================
+        function renderRoadmap() {
+            const grid = document.getElementById("roadmapGrid");
+            grid.innerHTML = S.roadmap.map(d => {
+                const allDone = d.morning.completed && d.afternoon.completed && d.evening.completed;
+                let doneCnt = [d.morning, d.afternoon, d.evening].filter(x => x.completed).length;
+                let dotColor = doneCnt === 0 ? "transparent" : doneCnt === 1 ? "var(--md-error)" : doneCnt === 2 ? "var(--md-warning)" : "var(--md-success)";
+
+                return `<div class="day-cell ${S.day === d.day ? 'today' : ''} ${allDone ? 'all-done' : ''}" onclick="openDay(${d.day})">
+          <span class="day-sub">Day</span>
+          <span class="day-num">${d.day}</span>
+          <div class="day-dot" style="background:${dotColor}"></div>
+        </div>`;
+            }).join("");
+
+            openDay(S.day);
+        }
+
+        function openDay(n) {
+            const d = S.roadmap[n - 1];
+            if (!d) return;
+
+            const drawer = document.getElementById("dayDrawer");
+            drawer.className = "day-drawer open";
+            drawer.innerHTML = `
+        <div class="drawer-head">
+          <h3>Day ${n} — ${d.phase} Phase</h3>
+          ${S.day !== n ? `<button class="md-btn md-btn-tonal" style="padding:6px 14px;font-size:0.8rem;" onclick="setDay(${n})">Set as Today</button>` : '<span class="card-badge">ACTIVE</span>'}
+        </div>
+        <div class="drawer-tasks">
+          <div class="task-row ${d.morning.completed ? 'done' : ''}" onclick="toggleTask(${n},'morning');openDay(${n});">
+            <div class="task-check"><span class="material-icons-round">check</span></div>
+            <span class="task-text"><strong>Morning:</strong> ${d.morning.task}</span>
+          </div>
+          <div class="task-row ${d.afternoon.completed ? 'done' : ''}" onclick="toggleTask(${n},'afternoon');openDay(${n});">
+            <div class="task-check"><span class="material-icons-round">check</span></div>
+            <span class="task-text"><strong>Afternoon:</strong> ${d.afternoon.task}</span>
+          </div>
+          <div class="task-row ${d.evening.completed ? 'done' : ''}" onclick="toggleTask(${n},'evening');openDay(${n});">
+            <div class="task-check"><span class="material-icons-round">check</span></div>
+            <span class="task-text"><strong>Evening:</strong> ${d.evening.task}</span>
+          </div>
+        </div>
+      `;
+        }
+
+        function setDay(n) {
+            S.day = n;
+            save();
+            refreshUI();
+        }
+
+        // ===================== PLACEMENT HUB =====================
+        function renderDSA() {
+            const grid = document.getElementById("dsaGrid");
+            grid.innerHTML = "";
+
+            for (const [name, problems] of Object.entries(S.dsa)) {
+                const done = problems.filter(p => p.done).length;
+                const pct = Math.round((done / problems.length) * 100);
+
+                grid.innerHTML += `<div class="pattern-card">
+          <div class="pattern-top">
+            <span class="pattern-name">${name}</span>
+            <span class="pattern-count">${done}/${problems.length} (${pct}%)</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill blue" style="width:${pct}%"></div></div>
+          <div class="problem-list">
+            ${problems.map((p, i) => `
+              <div class="problem-item ${p.done ? 'done' : ''}" onclick="toggleDSA('${name}',${i})">
+                <div class="problem-check"><span class="material-icons-round">check</span></div>
+                <span class="problem-text">${p.name}</span>
+              </div>
+            `).join("")}
+          </div>
+        </div>`;
+            }
+        }
+
+        function toggleDSA(group, idx) {
+            S.dsa[group][idx].done = !S.dsa[group][idx].done;
+            save();
+            renderDSA();
+            renderMastery();
+        }
+
+        function renderResume() {
+            const list = document.getElementById("resumeList");
+            let done = 0;
+            list.innerHTML = S.resume.map((item, i) => {
+                if (item.done) done++;
+                return `<div class="problem-item ${item.done ? 'done' : ''}" onclick="toggleResume(${i})">
+          <div class="problem-check"><span class="material-icons-round">check</span></div>
+          <span class="problem-text">${item.text}</span>
+        </div>`;
+            }).join("");
+            document.getElementById("resumeBadge").textContent = Math.round((done / S.resume.length) * 100) + "%";
+        }
+
+        function toggleResume(i) {
+            S.resume[i].done = !S.resume[i].done;
+            save();
+            renderResume();
+        }
+
+        function renderHR() {
+            document.getElementById("hrList").innerHTML = S.hr.map(h => `
+        <div class="hr-block">
+          <div class="hr-q">Q: ${h.q}</div>
+          <div class="hr-a">${h.a}</div>
+        </div>
+      `).join("");
+        }
+
+        function genMockHR() {
+            const h = S.hr[Math.floor(Math.random() * S.hr.length)];
+            quickPrompt(`Practice HR question: "${h.q}"`);
+        }
+
+        // ===================== FLASHCARDS =====================
+        function renderFC() {
+            if (fcFiltered.length === 0) {
+                document.getElementById("fcQ").textContent = "No cards available";
+                document.getElementById("fcA").textContent = "";
+                document.getElementById("fcCounter").textContent = "0 / 0";
+                return;
+            }
+            const c = fcFiltered[fcIdx];
+            document.getElementById("fcCatF").textContent = c.cat;
+            document.getElementById("fcCatB").textContent = c.cat;
+            document.getElementById("fcQ").textContent = c.q;
+            document.getElementById("fcA").innerHTML = c.a;
+            document.getElementById("fcCounter").textContent = `${fcIdx + 1} / ${fcFiltered.length}`;
+        }
+
+        function flipFC() { document.getElementById("fcViewport").classList.toggle("flipped"); }
+
+        function nextFC() {
+            document.getElementById("fcViewport").classList.remove("flipped");
+            setTimeout(() => { fcIdx = (fcIdx + 1) % fcFiltered.length; renderFC(); }, 150);
+        }
+
+        function prevFC() {
+            document.getElementById("fcViewport").classList.remove("flipped");
+            setTimeout(() => { fcIdx = (fcIdx - 1 + fcFiltered.length) % fcFiltered.length; renderFC(); }, 150);
+        }
+
+        function filterFC(cat, btn) {
+            document.querySelectorAll(".fc-filter-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            fcFiltered = cat === "ALL" ? [...FLASHCARDS] : FLASHCARDS.filter(f => f.cat === cat);
+            fcIdx = 0;
+            document.getElementById("fcViewport").classList.remove("flipped");
+            setTimeout(renderFC, 150);
+        }
+
+        // ===================== CHAT =====================
+        function renderChat() {
+            const box = document.getElementById("chatBox");
+            box.innerHTML = S.chat.map(m => `
+        <div class="chat-msg ${m.role === 'assistant' ? 'ai' : 'user'}">
+          <div class="chat-msg-sender">${m.role === 'assistant' ? 'AI Coach' : 'You'}</div>
+          <div>${fmtMD(m.content)}</div>
+        </div>
+      `).join("");
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function fmtMD(text) {
+            if (!text) return "";
+            let h = text;
+            h = h.replace(/\n\n/g, "</p><p>");
+            h = h.replace(/\n/g, "<br>");
+            h = h.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            h = h.replace(/###\s*(.*?)(<br>|<\/p>|$)/g, "<h4 style='margin:8px 0 4px;font-family:var(--font-display)'>$1</h4>");
+            h = h.replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>");
+            h = h.replace(/`(.*?)`/g, "<code>$1</code>");
+            h = h.replace(/^\s*[\*\-]\s*(.*)$/gm, "<li>$1</li>");
+            h = h.replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>");
+            h = h.replace(/^\s*\d+\.\s*(.*)$/gm, "<li>$1</li>");
+            return `<p>${h}</p>`.replace(/<p><pre>/g, "<pre>").replace(/<\/pre><\/p>/g, "</pre>");
+        }
+
+        async function onChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById("chatInput");
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = "";
+            await sendMessage(text);
+        }
+
+        async function quickPrompt(text) {
+            switchTab("chat");
+            await sendMessage(text);
+        }
+
+        async function sendMessage(text) {
+            S.chat.push({ role: "user", content: text });
+            save();
+            renderChat();
+
+            // Show typing indicator
+            const box = document.getElementById("chatBox");
+            const loader = document.createElement("div");
+            loader.className = "chat-msg ai";
+            loader.id = "chatTyping";
+            loader.innerHTML = `<div class="chat-msg-sender">AI Coach</div><div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+            box.appendChild(loader);
+            box.scrollTop = box.scrollHeight;
+
+            try {
+                const reply = await chatWithAI(text);
+                const el = document.getElementById("chatTyping");
+                if (el) el.remove();
+                S.chat.push({ role: "assistant", content: reply });
+                save();
+                renderChat();
+            } catch (err) {
+                const el = document.getElementById("chatTyping");
+                if (el) el.remove();
+                S.chat.push({ role: "assistant", content: `⚠️ **Error:** ${err.message}. Check your API key in Settings or try again.` });
+                save();
+                renderChat();
+            }
+        }
+
+        // ===================== SETTINGS =====================
+        function saveSettings() {
+            S.apiKey = document.getElementById("sApiKey").value.trim();
+            S.model = document.getElementById("sModel").value;
+            save();
+            updateApiChip();
+            alert("Settings saved!");
+        }
+
+        function resetApp() {
+            if (confirm("Reset all data? Your plan and progress will be cleared.")) {
+                localStorage.removeItem("sp_v3");
+                location.reload();
+            }
+        }
+    </script>
+</body>
+
+</html>

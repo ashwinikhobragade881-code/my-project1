@@ -1,2 +1,1 @@
-# my-project1
-first project
+FreshScan
